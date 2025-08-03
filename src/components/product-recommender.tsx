@@ -39,6 +39,7 @@ const ProductRecommender: FC = () => {
           placeholder="e.g., cerveja pilsen, tabaco de menta..."
           required
           rows={3}
+          className="bg-input text-foreground"
         />
         <SubmitButton />
         {state.isError && <p className="text-sm font-medium text-destructive">{state.message}</p>}
