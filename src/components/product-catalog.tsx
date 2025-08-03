@@ -29,7 +29,7 @@ const ProductCatalog: FC<ProductCatalogProps> = ({ products, onAddToOrder }) => 
   return (
     <div>
       <h2 className="font-headline text-3xl font-bold text-primary mb-6">Catálogo de Produtos</h2>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {products.map((product) => (
           <Card key={product.id} className="flex flex-col overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl">
             <CardHeader className="p-0">
@@ -38,20 +38,20 @@ const ProductCatalog: FC<ProductCatalogProps> = ({ products, onAddToOrder }) => 
                   alt={product.name}
                   width={400}
                   height={400}
-                  className="h-48 w-full object-cover"
+                  className="h-24 w-full object-cover"
                   data-ai-hint="product bottle can"
                 />
             </CardHeader>
-            <CardContent className="flex-1 p-4">
-              <CardTitle className="font-headline text-lg text-primary">{product.name}</CardTitle>
-              <CardDescription className="mt-1 h-20 overflow-hidden text-sm">
+            <CardContent className="flex-1 p-2">
+              <CardTitle className="font-headline text-xs text-primary">{product.name}</CardTitle>
+              <CardDescription className="mt-1 h-10 overflow-hidden text-xs">
                 {product.description}
               </CardDescription>
             </CardContent>
-            <CardFooter className="flex items-center justify-between p-4 pt-0">
-              <p className="text-xl font-bold text-primary">{formatCurrency(product.price)}</p>
-              <Button size="sm" onClick={() => onAddToOrder(product)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
+            <CardFooter className="flex items-center justify-between p-2 pt-0">
+              <p className="text-sm font-bold text-primary">{formatCurrency(product.price)}</p>
+              <Button size="sm" onClick={() => onAddToOrder(product)} className="text-xs p-1 h-auto">
+                <PlusCircle className="mr-1 h-3 w-3" />
                 Adicionar
               </Button>
             </CardFooter>
