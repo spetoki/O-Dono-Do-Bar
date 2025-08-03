@@ -2,18 +2,19 @@
 'use client';
 
 import type { FC } from 'react';
-import type { OrderItem } from '@/types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
+import type { OrderItem } from '@/types';
+import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
-import { Beer, Printer } from 'lucide-react';
+import { Printer, XCircle } from 'lucide-react';
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -24,79 +25,84 @@ interface ReceiptDialogProps {
   total: number;
 }
 
-const ReceiptDialog: FC<ReceiptDialogProps> = ({ isOpen, onClose, orderItems, subtotal, tax, total }) => {
-  
-  const handlePrint = () => {
-    const printContent = document.getElementById('receipt-content');
-    if (printContent) {
-      const originalContents = document.body.innerHTML;
-      const printContents = printContent.innerHTML;
-      document.body.innerHTML = printContents;
-      window.print();
-      document.body.innerHTML = originalContents;
-      window.location.reload(); // To re-attach event listeners
-    }
-  };
-
+const ReceiptDialog: FC<ReceiptDialogProps> = ({
+  isOpen,
+  onClose,
+  orderItems,
+  subtotal,
+  total,
+  tax,
+}) => {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(amount);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  if (!isOpen) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <div id="receipt-content">
-          <DialogHeader className="items-center">
-            <Beer className="h-8 w-8 text-primary" />
-            <DialogTitle className="font-headline text-2xl text-primary">Distribuidora</DialogTitle>
-            <p className="text-sm text-muted-foreground">Recibo do Pedido</p>
-            <p className="text-xs text-muted-foreground">{new Date().toLocaleString('pt-BR')}</p>
-          </DialogHeader>
-          <Separator className="my-4" />
-          <div className="space-y-2">
-            {orderItems.map(({ product, quantity }) => (
-              <div key={product.id} className="flex justify-between text-sm">
-                <div>
-                  <p className="font-medium">{product.name}</p>
-                  <p className="text-muted-foreground">
-                    {quantity} x {formatCurrency(product.price)}
-                  </p>
-                </div>
-                <p>{formatCurrency(product.price * quantity)}</p>
+      <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle className="text-center font-mono text-2xl">DOMTEC</DialogTitle>
+          <DialogDescription className="text-center font-mono">
+            Rua Exemplo, 123 - Cidade, Estado<br />
+            CNPJ: 00.000.000/0001-00 <br />
+            CUPOM NÃO FISCAL
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Separator />
+
+        <ScrollArea className="max-h-60">
+          <div className="text-xs font-mono space-y-2 my-2">
+            <div className="grid grid-cols-12">
+                <div className="col-span-6 font-bold">PRODUTO</div>
+                <div className="col-span-2 text-center font-bold">QTD</div>
+                <div className="col-span-4 text-right font-bold">TOTAL</div>
+            </div>
+            <Separator />
+            {orderItems.map((item) => (
+              <div key={item.product.id} className="grid grid-cols-12 gap-1">
+                <div className="col-span-6 truncate">{item.product.name}</div>
+                <div className="col-span-2 text-center">{item.quantity}</div>
+                <div className="col-span-4 text-right">{formatCurrency(item.product.price * item.quantity)}</div>
               </div>
             ))}
           </div>
-          <Separator className="my-4" />
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <p>Subtotal</p>
-              <p>{formatCurrency(subtotal)}</p>
-            </div>
-            <div className="flex justify-between">
-              <p>Impostos (8%)</p>
-              <p>{formatCurrency(tax)}</p>
-            </div>
+        </ScrollArea>
+        
+        <Separator />
+
+        <div className="font-mono text-sm space-y-2 my-2">
+           <div className="flex justify-between">
+            <span>Subtotal:</span>
+            <span>{formatCurrency(subtotal)}</span>
           </div>
-          <Separator className="my-4" />
-          <div className="flex justify-between text-lg font-bold">
-            <p>Total</p>
-            <p>{formatCurrency(total)}</p>
+          <div className="flex justify-between">
+            <span>Taxa (8%):</span>
+            <span>{formatCurrency(tax)}</span>
           </div>
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Obrigado por sua compra!
-          </p>
+           <Separator />
+          <div className="flex justify-between font-bold text-lg">
+            <span>TOTAL:</span>
+            <span>{formatCurrency(total)}</span>
+          </div>
         </div>
-        <DialogFooter className="mt-4 sm:justify-end">
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Fechar
-            </Button>
-          </DialogClose>
-          <Button onClick={handlePrint}>
-            <Printer className="mr-2 h-4 w-4" />
-            Imprimir
+
+        <Separator />
+
+        <DialogFooter className="sm:justify-between gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} className="w-full">
+            <XCircle className="mr-2" /> Fechar
+          </Button>
+          <Button onClick={handlePrint} className="w-full">
+            <Printer className="mr-2" /> Imprimir
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { FC } from 'react';
@@ -13,11 +12,14 @@ import { Search, DollarSign, X, Barcode } from 'lucide-react';
 import ProductCatalogDialog from '@/components/product-catalog-dialog';
 import { useToast } from '@/hooks/use-toast';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
+import ReceiptDialog from '@/components/receipt-dialog';
+
 
 const Home: FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const { toast } = useToast();
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
@@ -76,6 +78,23 @@ const Home: FC = () => {
     setOrderItems([]);
   };
 
+  const finalizeSale = () => {
+    if (orderItems.length > 0) {
+      setIsReceiptOpen(true);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Carrinho Vazio',
+        description: 'Adicione produtos antes de finalizar a venda.',
+      });
+    }
+  };
+
+  const handleCloseReceipt = () => {
+    setIsReceiptOpen(false);
+    clearOrder();
+  };
+
   const subtotal = useMemo(() => {
     return orderItems.reduce(
       (acc, item) => acc + item.product.price * item.quantity,
@@ -103,12 +122,21 @@ const Home: FC = () => {
         e.preventDefault();
         setIsScannerOpen(true);
       }
+      if (e.key.toLowerCase() === 'f10') {
+        e.preventDefault();
+        finalizeSale();
+      }
+       if (e.key.toLowerCase() === 'f5') {
+        e.preventDefault();
+        clearOrder();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderItems]);
 
 
   return (
@@ -155,7 +183,7 @@ const Home: FC = () => {
                     <p className="font-mono text-3xl font-extrabold">{formatCurrency(subtotal)}</p>
                   </div>
                   <div className="bg-primary text-primary-foreground p-4 rounded-lg text-center">
-                    <h4 className="font-bold text-sm">TOTAL PAGO</h4>
+                    <h4 className="font-bold text-sm">TOTAL</h4>
                     <p className="font-mono text-3xl font-extrabold">{formatCurrency(total)}</p>
                   </div>
                    <div className="bg-accent text-accent-foreground p-4 rounded-lg text-center">
@@ -167,7 +195,7 @@ const Home: FC = () => {
                     <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-lg">
                       <X className="mr-2"/> CANCELAR VENDA (F5)
                       </Button>
-                    <Button className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={finalizeSale} className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700 text-white">
                       <DollarSign className="mr-2"/> FINALIZAR VENDA (F10)
                       </Button>
                   </div>
@@ -185,6 +213,14 @@ const Home: FC = () => {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScan}
+      />
+       <ReceiptDialog
+        isOpen={isReceiptOpen}
+        onClose={handleCloseReceipt}
+        orderItems={orderItems}
+        subtotal={subtotal}
+        tax={tax}
+        total={total}
       />
     </div>
   );
