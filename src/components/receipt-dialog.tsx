@@ -39,9 +39,9 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({ isOpen, onClose, orderItems, su
   };
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-US', {
+    new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'BRL',
     }).format(amount);
 
   return (
@@ -52,7 +52,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({ isOpen, onClose, orderItems, su
             <Beer className="h-8 w-8 text-primary" />
             <DialogTitle className="font-headline text-2xl text-primary">Distribuidora</DialogTitle>
             <p className="text-sm text-muted-foreground">Recibo do Pedido</p>
-            <p className="text-xs text-muted-foreground">{new Date().toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">{new Date().toLocaleString('pt-BR')}</p>
           </DialogHeader>
           <Separator className="my-4" />
           <div className="space-y-2">

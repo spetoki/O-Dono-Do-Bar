@@ -33,9 +33,9 @@ const OrderSummary: FC<OrderSummaryProps> = ({
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-US', {
+    new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'BRL',
     }).format(amount);
 
   return (
@@ -58,7 +58,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                     width={48}
                     height={48}
                     className="h-12 w-12 rounded-md object-cover"
-                    data-ai-hint="product image"
+                    data-ai-hint={product.dataAiHint || "product"}
                   />
                   <div className="flex-1">
                     <p className="font-semibold">{product.name}</p>

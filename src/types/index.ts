@@ -6,6 +6,7 @@ export interface Product {
   price: number;
   imageUrl: string;
   category: string;
+  dataAiHint?: string;
 }
 
 export interface OrderItem {
