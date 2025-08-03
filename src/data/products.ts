@@ -44,7 +44,7 @@ export const products: Product[] = [
     description: 'Tabaco de alta qualidade, de queima suave, para enrolar o seu próprio cigarro.',
     price: 25.00,
     imageUrl: 'https://placehold.co/200x200',
-    category: 'Cigarros',
+    category: 'Tabacaria',
     dataAiHint: 'tobacco pouch'
   },
   {
@@ -71,7 +71,7 @@ export const products: Product[] = [
     description: 'Um vape descartável com sabor de menta, prático e fácil de usar.',
     price: 35.50,
     imageUrl: 'https://placehold.co/200x200',
-    category: 'Cigarros',
+    category: 'Tabacaria',
     dataAiHint: 'vape pen'
   },
   {
@@ -134,7 +134,7 @@ export const products: Product[] = [
     description: 'Livreto de seda de alta qualidade para enrolar. Queima lenta e uniforme.',
     price: 5.00,
     imageUrl: 'https://placehold.co/200x200',
-    category: 'Cigarros',
+    category: 'Tabacaria',
     dataAiHint: 'rolling papers'
   },
   {
