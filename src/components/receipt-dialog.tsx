@@ -48,9 +48,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-        if (paymentMethod !== 'dinheiro') {
-            onAmountPaidChange(total);
-        }
+      if (paymentMethod !== 'dinheiro') {
+        onAmountPaidChange(total);
+      } else {
+        // If switching to cash, ensure amount paid is what's in the state (likely 0)
+        onAmountPaidChange(amountPaid);
+      }
     }
   }, [isOpen, paymentMethod, total, onAmountPaidChange]);
 
@@ -78,9 +81,9 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     if (paymentMethod !== 'dinheiro') {
       return total.toFixed(2).replace('.', ',');
     }
-    // Avoid showing 0.00 when the user has cleared the input
-    if (amountPaid === 0 && document.activeElement === document.getElementById('amount-paid')) {
-        return '';
+    // Avoid showing 0 when the input is empty or focused
+    if (amountPaid === 0) {
+      return '';
     }
     return amountPaid.toFixed(2).replace('.', ',');
   }
@@ -88,8 +91,17 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) {
+            onClose();
+        }
+    }}>
+      <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          if (paymentMethod === 'dinheiro') {
+             document.getElementById('amount-paid')?.focus();
+          }
+      }}>
         <DialogHeader>
           <DialogTitle className="text-center font-mono text-2xl">DOMTEC</DialogTitle>
           <DialogDescription className="text-center font-mono">
@@ -146,7 +158,14 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                   <Button 
                     key={method}
                     variant={paymentMethod === method ? 'default' : 'outline'}
-                    onClick={() => setPaymentMethod(method)}
+                    onClick={() => {
+                        setPaymentMethod(method);
+                        if (method !== 'dinheiro') {
+                            onAmountPaidChange(total);
+                        } else {
+                            onAmountPaidChange(0); // Clear amount paid when switching to cash
+                        }
+                    }}
                     className="flex-1"
                   >
                     {method === 'dinheiro' && <DollarSign />}

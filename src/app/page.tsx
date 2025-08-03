@@ -96,7 +96,7 @@ const Home: FC = () => {
 
   const finalizeSale = () => {
     if (orderItems.length > 0) {
-      setAmountPaid(total); // Set initial amount paid to total
+      setAmountPaid(0); // Reset amount paid so the input is blank for cash payments
       setIsReceiptOpen(true);
     } else {
       toast({
