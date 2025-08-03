@@ -20,6 +20,7 @@ const Home: FC = () => {
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [amountPaid, setAmountPaid] = useState(0);
   const { toast } = useToast();
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
@@ -76,6 +77,7 @@ const Home: FC = () => {
   
   const clearOrder = () => {
     setOrderItems([]);
+    setAmountPaid(0);
   };
 
   const finalizeSale = () => {
@@ -104,6 +106,10 @@ const Home: FC = () => {
 
   const tax = useMemo(() => subtotal * 0.08, [subtotal]);
   const total = useMemo(() => subtotal + tax, [subtotal, tax]);
+  
+  const change = useMemo(() => {
+    return amountPaid > total ? amountPaid - total : 0;
+  }, [amountPaid, total]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -188,7 +194,7 @@ const Home: FC = () => {
                   </div>
                    <div className="bg-accent text-accent-foreground p-4 rounded-lg text-center">
                     <h4 className="font-bold text-sm">TROCO</h4>
-                    <p className="font-mono text-3xl font-extrabold">{formatCurrency(0)}</p>
+                    <p className="font-mono text-3xl font-extrabold">{formatCurrency(change)}</p>
                   </div>
                 </div>
                  <div className="flex gap-2">
@@ -221,6 +227,8 @@ const Home: FC = () => {
         subtotal={subtotal}
         tax={tax}
         total={total}
+        onAmountPaidChange={setAmountPaid}
+        change={change}
       />
     </div>
   );

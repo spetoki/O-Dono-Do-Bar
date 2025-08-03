@@ -1,4 +1,3 @@
-
 export interface Product {
   id: number;
   name: string;
@@ -13,3 +12,5 @@ export interface OrderItem {
   product: Product;
   quantity: number;
 }
+
+export type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';

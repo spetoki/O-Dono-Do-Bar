@@ -1,7 +1,6 @@
-
 'use client';
 
-import type { FC } from 'react';
+import { type FC, useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +13,14 @@ import { Button } from '@/components/ui/button';
 import type { OrderItem } from '@/types';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
-import { Printer, XCircle } from 'lucide-react';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { cn } from '@/lib/utils';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList } from 'lucide-react';
+import React from 'react';
+
+
+type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -23,6 +29,8 @@ interface ReceiptDialogProps {
   subtotal: number;
   tax: number;
   total: number;
+  onAmountPaidChange: (amount: number) => void;
+  change: number;
 }
 
 const ReceiptDialog: FC<ReceiptDialogProps> = ({
@@ -32,7 +40,27 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   subtotal,
   total,
   tax,
+  onAmountPaidChange,
+  change
 }) => {
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
+  const [localAmountPaid, setLocalAmountPaid] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalAmountPaid(total.toFixed(2));
+      onAmountPaidChange(total);
+    }
+  }, [isOpen, total, onAmountPaidChange]);
+  
+  useEffect(() => {
+     if(paymentMethod !== 'dinheiro') {
+        onAmountPaidChange(total);
+        setLocalAmountPaid(total.toFixed(2));
+     }
+  }, [paymentMethod, total, onAmountPaidChange]);
+
+
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -43,6 +71,13 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     window.print();
   };
 
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalAmountPaid(value);
+    const numericValue = parseFloat(value.replace(',', '.')) || 0;
+    onAmountPaidChange(numericValue);
+  };
+  
   if (!isOpen) return null;
 
   return (
@@ -59,7 +94,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         
         <Separator />
 
-        <ScrollArea className="max-h-60">
+        <ScrollArea className="max-h-40">
           <div className="text-xs font-mono space-y-2 my-2">
             <div className="grid grid-cols-12">
                 <div className="col-span-6 font-bold">PRODUTO</div>
@@ -94,8 +129,44 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <span>{formatCurrency(total)}</span>
           </div>
         </div>
-
+        
         <Separator />
+        
+         <div>
+            <Label className="text-sm font-medium">Forma de Pagamento</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {(['dinheiro', 'cartao', 'pix', 'fiado'] as PaymentMethod[]).map(method => (
+                  <Button 
+                    key={method}
+                    variant={paymentMethod === method ? 'default' : 'outline'}
+                    onClick={() => setPaymentMethod(method)}
+                    className="flex-1"
+                  >
+                    {method === 'dinheiro' && <DollarSign />}
+                    {method === 'cartao' && <CreditCard />}
+                    {method === 'pix' && <Landmark />}
+                    {method === 'fiado' && <ClipboardList />}
+                    <span className="capitalize ml-2">{method}</span>
+                  </Button>
+              ))}
+            </div>
+        </div>
+
+        {paymentMethod === 'dinheiro' && (
+          <div className="space-y-2 animate-fade-in">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="amount-paid">Valor Pago</Label>
+                  <Input id="amount-paid" value={localAmountPaid} onChange={handleAmountChange} className="text-right font-mono text-lg h-12" />
+                </div>
+                <div className="space-y-2">
+                   <Label htmlFor="change">Troco</Label>
+                   <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
+                </div>
+              </div>
+          </div>
+        )}
+        
 
         <DialogFooter className="sm:justify-between gap-2 mt-4">
           <Button variant="outline" onClick={onClose} className="w-full">
