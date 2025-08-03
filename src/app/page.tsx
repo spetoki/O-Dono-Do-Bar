@@ -138,12 +138,6 @@ const Home: FC = () => {
                       />
                     </div>
                      <div>
-                      <label className="text-sm font-bold">VALOR UNITÁRIO</label>
-                       <div className="w-full p-2 mt-1 rounded-md bg-muted text-muted-foreground text-lg font-mono">
-                         {selectedItem ? formatCurrency(selectedItem.product.price) : 'R$ 0,00'}
-                       </div>
-                    </div>
-                     <div>
                       <label className="text-sm font-bold">TOTAL DO ITEM</label>
                        <div className="w-full p-2 mt-1 rounded-md bg-muted text-muted-foreground text-lg font-mono">
                          {selectedItem ? formatCurrency(selectedItem.product.price * selectedItem.quantity) : 'R$ 0,00'}
