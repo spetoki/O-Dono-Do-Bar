@@ -11,6 +11,10 @@ import { Beer, Cigarette, Cookie, ShoppingBasket, Sparkles, Sprout } from 'lucid
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Separator } from '@/components/ui/separator';
 
+interface ProductRecommenderProps {
+  onAddToOrder: (product: Product) => void;
+}
+
 const categories = [
   { name: 'Bebidas', icon: <Beer className="h-10 w-10" /> },
   { name: 'Tabacaria', icon: <Cigarette className="h-10 w-10" /> },
@@ -22,7 +26,7 @@ const categories = [
 
 const bestSellers: Product[] = products.slice(0, 10);
 
-const ProductRecommender: FC = () => {
+const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder }) => {
 
   const handleCategoryClick = (category: string) => {
     // Futuramente, podemos abrir o catálogo na categoria selecionada.
@@ -69,7 +73,10 @@ const ProductRecommender: FC = () => {
             {bestSellers.map((product) => (
               <CarouselItem key={product.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
                 <div className="p-1">
-                  <Card className="overflow-hidden">
+                  <Card 
+                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => onAddToOrder(product)}
+                  >
                     <CardContent className="flex aspect-square items-center justify-center p-2 flex-col">
                        <Image
                           src={product.imageUrl}

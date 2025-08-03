@@ -158,7 +158,7 @@ const Home: FC = () => {
              {/* Left Column */}
             <div className="md:col-span-1 flex flex-col gap-4">
                 <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4">
-                  <ProductRecommender />
+                  <ProductRecommender onAddToOrder={addToOrder} />
                 </div>
             </div>
 
