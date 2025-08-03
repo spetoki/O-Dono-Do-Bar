@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
-import { Wine, Printer } from 'lucide-react';
+import { Beer, Printer } from 'lucide-react';
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -49,22 +49,22 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({ isOpen, onClose, orderItems, su
       <DialogContent className="sm:max-w-md">
         <div id="receipt-content">
           <DialogHeader className="items-center">
-            <Wine className="h-8 w-8 text-primary" />
-            <DialogTitle className="font-headline text-2xl text-primary">Adegga</DialogTitle>
-            <p className="text-sm text-muted-foreground">Order Receipt</p>
+            <Beer className="h-8 w-8 text-primary" />
+            <DialogTitle className="font-headline text-2xl text-primary">Distribuidora</DialogTitle>
+            <p className="text-sm text-muted-foreground">Recibo do Pedido</p>
             <p className="text-xs text-muted-foreground">{new Date().toLocaleString()}</p>
           </DialogHeader>
           <Separator className="my-4" />
           <div className="space-y-2">
-            {orderItems.map(({ wine, quantity }) => (
-              <div key={wine.id} className="flex justify-between text-sm">
+            {orderItems.map(({ product, quantity }) => (
+              <div key={product.id} className="flex justify-between text-sm">
                 <div>
-                  <p className="font-medium">{wine.name}</p>
+                  <p className="font-medium">{product.name}</p>
                   <p className="text-muted-foreground">
-                    {quantity} x {formatCurrency(wine.price)}
+                    {quantity} x {formatCurrency(product.price)}
                   </p>
                 </div>
-                <p>{formatCurrency(wine.price * quantity)}</p>
+                <p>{formatCurrency(product.price * quantity)}</p>
               </div>
             ))}
           </div>
@@ -75,7 +75,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({ isOpen, onClose, orderItems, su
               <p>{formatCurrency(subtotal)}</p>
             </div>
             <div className="flex justify-between">
-              <p>Taxes (8%)</p>
+              <p>Impostos (8%)</p>
               <p>{formatCurrency(tax)}</p>
             </div>
           </div>
@@ -85,18 +85,18 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({ isOpen, onClose, orderItems, su
             <p>{formatCurrency(total)}</p>
           </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Thank you for your purchase!
+            Obrigado por sua compra!
           </p>
         </div>
         <DialogFooter className="mt-4 sm:justify-end">
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Close
+              Fechar
             </Button>
           </DialogClose>
           <Button onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
-            Print
+            Imprimir
           </Button>
         </DialogFooter>
       </DialogContent>

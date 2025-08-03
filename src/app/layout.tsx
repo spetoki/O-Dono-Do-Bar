@@ -4,8 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Adegga',
-  description: 'Point of sale system for your wine cellar.',
+  title: 'Distribuidora de Bebidas',
+  description: 'Sistema de ponto de venda para sua distribuidora.',
 };
 
 export default function RootLayout({

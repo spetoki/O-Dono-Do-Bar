@@ -1,6 +1,6 @@
 
 import type { FC } from 'react';
-import type { Wine } from '@/types';
+import type { Product } from '@/types';
 import {
   Card,
   CardContent,
@@ -13,12 +13,12 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 
-interface WineCatalogProps {
-  wines: Wine[];
-  onAddToOrder: (wine: Wine) => void;
+interface ProductCatalogProps {
+  products: Product[];
+  onAddToOrder: (product: Product) => void;
 }
 
-const WineCatalog: FC<WineCatalogProps> = ({ wines, onAddToOrder }) => {
+const ProductCatalog: FC<ProductCatalogProps> = ({ products, onAddToOrder }) => {
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-US', {
@@ -28,31 +28,31 @@ const WineCatalog: FC<WineCatalogProps> = ({ wines, onAddToOrder }) => {
 
   return (
     <div>
-      <h2 className="font-headline text-3xl font-bold text-primary mb-6">Wine Catalog</h2>
+      <h2 className="font-headline text-3xl font-bold text-primary mb-6">Catálogo de Produtos</h2>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {wines.map((wine) => (
-          <Card key={wine.id} className="flex flex-col overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl">
+        {products.map((product) => (
+          <Card key={product.id} className="flex flex-col overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl">
             <CardHeader className="p-0">
                <Image
-                  src={wine.imageUrl}
-                  alt={wine.name}
+                  src={product.imageUrl}
+                  alt={product.name}
                   width={400}
                   height={400}
                   className="h-48 w-full object-cover"
-                  data-ai-hint="wine bottle"
+                  data-ai-hint="product bottle can"
                 />
             </CardHeader>
             <CardContent className="flex-1 p-4">
-              <CardTitle className="font-headline text-lg text-primary">{wine.name}</CardTitle>
+              <CardTitle className="font-headline text-lg text-primary">{product.name}</CardTitle>
               <CardDescription className="mt-1 h-20 overflow-hidden text-sm">
-                {wine.description}
+                {product.description}
               </CardDescription>
             </CardContent>
             <CardFooter className="flex items-center justify-between p-4 pt-0">
-              <p className="text-xl font-bold text-primary">{formatCurrency(wine.price)}</p>
-              <Button size="sm" onClick={() => onAddToOrder(wine)}>
+              <p className="text-xl font-bold text-primary">{formatCurrency(product.price)}</p>
+              <Button size="sm" onClick={() => onAddToOrder(product)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add
+                Adicionar
               </Button>
             </CardFooter>
           </Card>
@@ -62,4 +62,4 @@ const WineCatalog: FC<WineCatalogProps> = ({ wines, onAddToOrder }) => {
   );
 };
 
-export default WineCatalog;
+export default ProductCatalog;

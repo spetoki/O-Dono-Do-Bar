@@ -1,5 +1,5 @@
 
-export interface Wine {
+export interface Product {
   id: number;
   name: string;
   description: string;
@@ -8,6 +8,6 @@ export interface Wine {
 }
 
 export interface OrderItem {
-  wine: Wine;
+  product: Product;
   quantity: number;
 }

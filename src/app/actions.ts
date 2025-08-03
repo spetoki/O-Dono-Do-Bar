@@ -1,44 +1,44 @@
 
 'use server';
 
-import { wineRecommendation, type WineRecommendationInput, type WineRecommendationOutput } from '@/ai/flows/wine-recommendation';
+import { productRecommendation, type ProductRecommendationInput, type ProductRecommendationOutput } from '@/ai/flows/product-recommendation';
 import { z } from 'zod';
 
-const wineRecommendationInputSchema = z.object({
-  tastePreferences: z.string().min(3, { message: "Please describe your taste preferences in a bit more detail." }),
+const productRecommendationInputSchema = z.object({
+  tastePreferences: z.string().min(3, { message: "Por favor, descreva suas preferências com um pouco mais de detalhe." }),
 });
 
 interface FormState {
   message: string;
-  recommendation?: WineRecommendationOutput;
+  recommendation?: ProductRecommendationOutput;
   isError: boolean;
 }
 
-export async function getWineRecommendation(
+export async function getProductRecommendation(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const validatedFields = wineRecommendationInputSchema.safeParse({
+  const validatedFields = productRecommendationInputSchema.safeParse({
     tastePreferences: formData.get('tastePreferences'),
   });
 
   if (!validatedFields.success) {
     return {
-      message: validatedFields.error.flatten().fieldErrors.tastePreferences?.[0] ?? "Invalid input.",
+      message: validatedFields.error.flatten().fieldErrors.tastePreferences?.[0] ?? "Entrada inválida.",
       isError: true,
     };
   }
   
   try {
-    const result = await wineRecommendation(validatedFields.data);
+    const result = await productRecommendation(validatedFields.data);
     return {
-      message: 'Here is your recommendation!',
+      message: 'Aqui está a sua recomendação!',
       recommendation: result,
       isError: false,
     };
   } catch (error) {
     return {
-      message: 'We had trouble getting a recommendation. Please try again later.',
+      message: 'Tivemos problemas para obter uma recomendação. Por favor, tente novamente mais tarde.',
       isError: true,
     };
   }

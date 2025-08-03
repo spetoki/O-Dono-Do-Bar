@@ -3,11 +3,11 @@
 
 import type { FC } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
-import { getWineRecommendation } from '@/app/actions';
+import { getProductRecommendation } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Sparkles, Grape, Wine, ChefHat } from 'lucide-react';
+import { Sparkles, GlassWater, Cigarette, Beer } from 'lucide-react';
 
 const initialState = {
   message: '',
@@ -18,25 +18,25 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Thinking...' : 'Get Recommendation'}
+      {pending ? 'Pensando...' : 'Obter Recomendação'}
       <Sparkles className="ml-2 h-4 w-4" />
     </Button>
   );
 }
 
-const WineRecommender: FC = () => {
-  const [state, formAction] = useFormState(getWineRecommendation, initialState);
+const ProductRecommender: FC = () => {
+  const [state, formAction] = useFormState(getProductRecommendation, initialState);
 
   return (
     <div className="space-y-4">
-      <h3 className="font-headline text-2xl font-semibold text-primary">AI Sommelier</h3>
+      <h3 className="font-headline text-2xl font-semibold text-primary">Recomendação da IA</h3>
       <p className="text-sm text-muted-foreground">
-        Describe the flavors, aromas, or types of wine you enjoy, and our AI will find the perfect bottle for you. (e.g., "I like dry, fruity red wines with a hint of oak.")
+        Descreva os sabores, marcas ou tipos de bebidas ou produtos de tabacaria que você gosta, e nossa IA encontrará a opção perfeita para você. (ex: "Gosto de cervejas IPA amargas" ou "Prefiro um tabaco mais suave").
       </p>
       <form action={formAction} className="space-y-4">
         <Textarea
           name="tastePreferences"
-          placeholder="e.g., dry, fruity, full-bodied..."
+          placeholder="e.g., cerveja pilsen, tabaco de menta..."
           required
           rows={3}
         />
@@ -48,18 +48,18 @@ const WineRecommender: FC = () => {
         <Card className="mt-4 animate-fade-in bg-primary/5">
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2 text-primary">
-              <Wine /> {state.recommendation.recommendation}
+              <Beer /> {state.recommendation.recommendation}
             </CardTitle>
-            <CardDescription>Our AI Sommelier suggests:</CardDescription>
+            <CardDescription>Nosso especialista de IA sugere:</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-semibold flex items-center gap-2"><Grape className="text-primary/70" /> Why you'll love it:</h4>
+              <h4 className="font-semibold flex items-center gap-2"><GlassWater className="text-primary/70" /> Por que você vai gostar:</h4>
               <p className="text-sm text-foreground/80">{state.recommendation.reasoning}</p>
             </div>
              <div>
-              <h4 className="font-semibold flex items-center gap-2"><ChefHat className="text-primary/70" /> Food Pairing:</h4>
-              <p className="text-sm text-foreground/80">This wine pairs wonderfully with grilled red meats, aged cheeses, or a hearty pasta dish.</p>
+              <h4 className="font-semibold flex items-center gap-2"><Cigarette className="text-primary/70" /> Harmonização:</h4>
+              <p className="text-sm text-foreground/80">Este produto combina perfeitamente com um bom churrasco, petiscos ou uma conversa com amigos.</p>
             </div>
           </CardContent>
         </Card>
@@ -68,4 +68,4 @@ const WineRecommender: FC = () => {
   );
 };
 
-export default WineRecommender;
+export default ProductRecommender;
