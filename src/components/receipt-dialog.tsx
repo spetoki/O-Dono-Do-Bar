@@ -1,4 +1,3 @@
-
 'use client';
 
 import { type FC, useState, useEffect, ChangeEvent } from 'react';
@@ -16,15 +15,15 @@ import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle } from 'lucide-react';
 import React from 'react';
-
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 
 interface ReceiptDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onFinalize: () => void;
   orderItems: OrderItem[];
   subtotal: number;
   tax: number;
@@ -37,6 +36,7 @@ interface ReceiptDialogProps {
 const ReceiptDialog: FC<ReceiptDialogProps> = ({
   isOpen,
   onClose,
+  onFinalize,
   orderItems,
   subtotal,
   total,
@@ -47,6 +47,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
+  const [cpf, setCpf] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -57,6 +58,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         onAmountPaidChange(0);
         setAmountPaidDisplay('');
       }
+      setCpf(''); // Reset CPF on open
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, paymentMethod, total]);
@@ -74,25 +76,33 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     }
   }, [amountPaid, paymentMethod, total]);
 
-
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(amount);
-
+    
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleFinalize = () => {
+    // Here you could add logic to save the sale, CPF, etc.
+    console.log(`Venda finalizada com CPF: ${cpf}`);
+    onFinalize();
+  };
+
 
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAmountPaidDisplay(value);
     
-    // Allow empty string or valid number format
-    if (value === '' || /^\d*[,.]?\d{0,2}$/.test(value)) {
+    // Allow empty string or valid number format up to 1,000,000
+    if (value === '' || /^\d{1,7}([,.]\d{0,2})?$/.test(value)) {
        const numericValue = parseFloat(value.replace(',', '.')) || 0;
-       onAmountPaidChange(numericValue);
+       if (numericValue <= 1000000) {
+         onAmountPaidChange(numericValue);
+       }
     }
   };
 
@@ -161,6 +171,11 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
           </div>
         </div>
         
+         <div className="space-y-2">
+            <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
+            <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+        </div>
+        
         <Separator />
         
          <div>
@@ -206,13 +221,16 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
           </div>
         
 
-        <DialogFooter className="sm:justify-between gap-2 mt-4">
-          <Button variant="outline" onClick={onClose} className="w-full">
-            <XCircle className="mr-2" /> Fechar
-          </Button>
-          <Button onClick={handlePrint} className="w-full">
-            <Printer className="mr-2" /> Imprimir
-          </Button>
+        <DialogFooter className="grid grid-cols-3 gap-2 mt-4">
+            <Button variant="outline" onClick={onClose}>
+              <XCircle className="mr-2" /> Fechar
+            </Button>
+            <Button variant="outline" onClick={handlePrint}>
+              <Printer className="mr-2" /> Imprimir
+            </Button>
+            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="mr-2" /> Finalizar Compra
+            </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

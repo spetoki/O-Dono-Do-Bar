@@ -94,7 +94,7 @@ const Home: FC = () => {
     return amountPaid > total ? amountPaid - total : 0;
   }, [amountPaid, total]);
 
-  const finalizeSale = () => {
+  const openFinalizeSaleDialog = () => {
     if (orderItems.length > 0) {
       setAmountPaid(0); // Reset amount paid so the input is blank for cash payments
       setIsReceiptOpen(true);
@@ -107,7 +107,7 @@ const Home: FC = () => {
     }
   };
 
-  const handleCloseReceipt = () => {
+  const handleFinalizeAndClear = () => {
     setIsReceiptOpen(false);
     clearOrder();
   };
@@ -131,7 +131,7 @@ const Home: FC = () => {
       }
       if (e.key.toLowerCase() === 'f10') {
         e.preventDefault();
-        finalizeSale();
+        openFinalizeSaleDialog();
       }
        if (e.key.toLowerCase() === 'f5') {
         e.preventDefault();
@@ -158,7 +158,7 @@ const Home: FC = () => {
              {/* Left Column */}
             <div className="md:col-span-1 flex flex-col gap-4">
                 <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4">
-                  <ProductRecommender onAddToOrder={addToOrder} />
+                  <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} />
                 </div>
             </div>
 
@@ -202,7 +202,7 @@ const Home: FC = () => {
                     <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-lg">
                       <X className="mr-2"/> CANCELAR VENDA (F5)
                       </Button>
-                    <Button onClick={finalizeSale} className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700 text-white">
                       <DollarSign className="mr-2"/> FINALIZAR VENDA (F10)
                       </Button>
                   </div>
@@ -223,7 +223,8 @@ const Home: FC = () => {
       />
        <ReceiptDialog
         isOpen={isReceiptOpen}
-        onClose={handleCloseReceipt}
+        onClose={() => setIsReceiptOpen(false)}
+        onFinalize={handleFinalizeAndClear}
         orderItems={orderItems}
         subtotal={subtotal}
         tax={tax}
