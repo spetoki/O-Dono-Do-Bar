@@ -80,8 +80,23 @@ const Home: FC = () => {
     setAmountPaid(0);
   };
 
+  const subtotal = useMemo(() => {
+    return orderItems.reduce(
+      (acc, item) => acc + item.product.price * item.quantity,
+      0
+    );
+  }, [orderItems]);
+
+  const tax = useMemo(() => subtotal * 0.08, [subtotal]);
+  const total = useMemo(() => subtotal + tax, [subtotal, tax]);
+  
+  const change = useMemo(() => {
+    return amountPaid > total ? amountPaid - total : 0;
+  }, [amountPaid, total]);
+
   const finalizeSale = () => {
     if (orderItems.length > 0) {
+      setAmountPaid(total); // Set initial amount paid to total
       setIsReceiptOpen(true);
     } else {
       toast({
@@ -96,20 +111,6 @@ const Home: FC = () => {
     setIsReceiptOpen(false);
     clearOrder();
   };
-
-  const subtotal = useMemo(() => {
-    return orderItems.reduce(
-      (acc, item) => acc + item.product.price * item.quantity,
-      0
-    );
-  }, [orderItems]);
-
-  const tax = useMemo(() => subtotal * 0.08, [subtotal]);
-  const total = useMemo(() => subtotal + tax, [subtotal, tax]);
-  
-  const change = useMemo(() => {
-    return amountPaid > total ? amountPaid - total : 0;
-  }, [amountPaid, total]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -142,7 +143,7 @@ const Home: FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderItems]);
+  }, [orderItems, total]);
 
 
   return (
@@ -228,6 +229,7 @@ const Home: FC = () => {
         tax={tax}
         total={total}
         onAmountPaidChange={setAmountPaid}
+        amountPaid={amountPaid}
         change={change}
       />
     </div>

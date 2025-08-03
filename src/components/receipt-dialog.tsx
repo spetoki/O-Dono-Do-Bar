@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, useState, useEffect } from 'react';
+import { type FC, useState, useEffect, ChangeEvent } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,6 @@ import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { cn } from '@/lib/utils';
 import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList } from 'lucide-react';
 import React from 'react';
 
@@ -30,6 +29,7 @@ interface ReceiptDialogProps {
   tax: number;
   total: number;
   onAmountPaidChange: (amount: number) => void;
+  amountPaid: number;
   change: number;
 }
 
@@ -41,24 +41,18 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   total,
   tax,
   onAmountPaidChange,
+  amountPaid,
   change
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
-  const [localAmountPaid, setLocalAmountPaid] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setLocalAmountPaid(total.toFixed(2));
-      onAmountPaidChange(total);
+        if (paymentMethod !== 'dinheiro') {
+            onAmountPaidChange(total);
+        }
     }
-  }, [isOpen, total, onAmountPaidChange]);
-  
-  useEffect(() => {
-     if(paymentMethod !== 'dinheiro') {
-        onAmountPaidChange(total);
-        setLocalAmountPaid(total.toFixed(2));
-     }
-  }, [paymentMethod, total, onAmountPaidChange]);
+  }, [isOpen, paymentMethod, total, onAmountPaidChange]);
 
 
   const formatCurrency = (amount: number) =>
@@ -71,12 +65,25 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     window.print();
   };
 
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setLocalAmountPaid(value);
-    const numericValue = parseFloat(value.replace(',', '.')) || 0;
-    onAmountPaidChange(numericValue);
+    // Allow empty string or valid number format
+    if (value === '' || /^\d*[,.]?\d*$/.test(value)) {
+       const numericValue = parseFloat(value.replace(',', '.')) || 0;
+       onAmountPaidChange(numericValue);
+    }
   };
+
+  const getAmountPaidValue = () => {
+    if (paymentMethod !== 'dinheiro') {
+      return total.toFixed(2).replace('.', ',');
+    }
+    // Avoid showing 0.00 when the user has cleared the input
+    if (amountPaid === 0 && document.activeElement === document.getElementById('amount-paid')) {
+        return '';
+    }
+    return amountPaid.toFixed(2).replace('.', ',');
+  }
   
   if (!isOpen) return null;
 
@@ -152,12 +159,11 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             </div>
         </div>
 
-        {paymentMethod === 'dinheiro' && (
-          <div className="space-y-2 animate-fade-in">
+        <div className="space-y-2 animate-fade-in">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount-paid">Valor Pago</Label>
-                  <Input id="amount-paid" value={localAmountPaid} onChange={handleAmountChange} className="text-right font-mono text-lg h-12" />
+                  <Input id="amount-paid" value={getAmountPaidValue()} onChange={handleAmountChange} readOnly={paymentMethod !== 'dinheiro'} className="text-right font-mono text-lg h-12" />
                 </div>
                 <div className="space-y-2">
                    <Label htmlFor="change">Troco</Label>
@@ -165,7 +171,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                 </div>
               </div>
           </div>
-        )}
         
 
         <DialogFooter className="sm:justify-between gap-2 mt-4">

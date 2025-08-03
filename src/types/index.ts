@@ -12,5 +12,3 @@ export interface OrderItem {
   product: Product;
   quantity: number;
 }
-
-export type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
