@@ -1,6 +1,7 @@
 
 import type { FC } from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, PackagePlus, Boxes, LineChart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Header: FC = () => {
   return (
@@ -14,10 +15,19 @@ const Header: FC = () => {
           <p className="text-xs">SISTEMAS ERP</p>
         </div>
       </div>
-       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-bold tracking-tight text-right">
-          DOMTEC SISTEMAS
-        </h1>
+       <div className="flex items-center gap-2">
+         <Button variant="secondary">
+            <PackagePlus className="mr-2" />
+            Cadastrar Itens
+        </Button>
+        <Button variant="secondary">
+            <Boxes className="mr-2" />
+            Estoque
+        </Button>
+        <Button variant="secondary">
+            <LineChart className="mr-2" />
+            Vendas
+        </Button>
       </div>
     </header>
   );
