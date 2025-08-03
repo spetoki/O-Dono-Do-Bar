@@ -16,11 +16,6 @@ import ProductCatalogDialog from '@/components/product-catalog-dialog';
 const Home: FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const [activeInput, setActiveInput] = useState<'productCode' | 'quantity'>(
-    'productCode'
-  );
-  const [productCode, setProductCode] = useState('');
-  const [quantity, setQuantity] = useState('1');
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
     setOrderItems((prevItems) => {
@@ -60,8 +55,6 @@ const Home: FC = () => {
 
   const clearOrder = () => {
     setOrderItems([]);
-    setProductCode('');
-    setQuantity('1');
   };
 
   const subtotal = useMemo(() => {
@@ -73,28 +66,6 @@ const Home: FC = () => {
 
   const tax = useMemo(() => subtotal * 0.08, [subtotal]);
   const total = useMemo(() => subtotal + tax, [subtotal, tax]);
-
-  const handleNumpadInput = (value: string) => {
-    if (activeInput === 'productCode') {
-      setProductCode((prev) => prev + value);
-    } else {
-      setQuantity((prev) => (prev === '1' ? value : prev + value));
-    }
-  };
-
-  const handleAddByCode = () => {
-    const product = allProducts.find(p => p.id === parseInt(productCode, 10));
-    if (product) {
-      addToOrder(product, parseInt(quantity, 10));
-      setProductCode('');
-      setQuantity('1');
-      setActiveInput('productCode');
-    } else {
-      // TODO: show error toast
-      alert('Produto não encontrado!');
-      setProductCode('');
-    }
-  };
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -114,44 +85,8 @@ const Home: FC = () => {
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
              {/* Left Column */}
             <div className="md:col-span-1 flex flex-col gap-4">
-               {/* Inputs and Numpad */}
-                <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4 justify-between">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-bold" onClick={() => setActiveInput('productCode')}>CÓDIGO DE BARRAS</label>
-                      <input
-                        type="text"
-                        value={productCode}
-                        readOnly
-                        onFocus={() => setActiveInput('productCode')}
-                        className={`w-full p-2 mt-1 rounded-md bg-input text-foreground text-lg font-mono ${activeInput === 'productCode' ? 'ring-2 ring-ring' : ''}`}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-bold" onClick={() => setActiveInput('quantity')}>QUANTIDADE</label>
-                       <input
-                        type="text"
-                        value={quantity}
-                        readOnly
-                        onFocus={() => setActiveInput('quantity')}
-                        className={`w-full p-2 mt-1 rounded-md bg-input text-foreground text-lg font-mono ${activeInput === 'quantity' ? 'ring-2 ring-ring' : ''}`}
-                      />
-                    </div>
-                     <div>
-                      <label className="text-sm font-bold">TOTAL DO ITEM</label>
-                       <div className="w-full p-2 mt-1 rounded-md bg-muted text-muted-foreground text-lg font-mono">
-                         {selectedItem ? formatCurrency(selectedItem.product.price * selectedItem.quantity) : 'R$ 0,00'}
-                       </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['7', '8', '9', '4', '5', '6', '1', '2', '3', '00', '0', ','].map((key) => (
-                      <Button key={key} onClick={() => handleNumpadInput(key)} variant="outline" className="h-16 text-2xl font-bold bg-card text-card-foreground">
-                        {key}
-                      </Button>
-                    ))}
-                  </div>
-                   <Button onClick={handleAddByCode} className="h-16 text-2xl font-bold bg-accent text-accent-foreground">Adicionar Item</Button>
+                <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4">
+                  <ProductRecommender />
                 </div>
             </div>
 
