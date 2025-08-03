@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { FC } from 'react';
@@ -127,6 +128,9 @@ const Home: FC = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcuts for POS main page
+      if (isReceiptOpen || isCatalogOpen || isScannerOpen) return;
+
       if (e.key.toLowerCase() === 'f7') {
         e.preventDefault();
         openCatalog();
@@ -149,7 +153,7 @@ const Home: FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderItems, total]);
+  }, [orderItems, total, isReceiptOpen, isCatalogOpen, isScannerOpen]);
 
 
   return (
