@@ -10,6 +10,7 @@ export const products: Product[] = [
     price: 3.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 24,
     dataAiHint: 'beer can'
   },
   {
@@ -19,6 +20,7 @@ export const products: Product[] = [
     price: 9.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 15,
     dataAiHint: 'soda bottle'
   },
   {
@@ -28,6 +30,7 @@ export const products: Product[] = [
     price: 55.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 8,
     dataAiHint: 'wine bottle'
   },
   {
@@ -37,6 +40,7 @@ export const products: Product[] = [
     price: 2.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 50,
     dataAiHint: 'water bottle'
   },
   {
@@ -46,6 +50,7 @@ export const products: Product[] = [
     price: 12.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 3,
     dataAiHint: 'juice carton'
   },
   {
@@ -55,6 +60,7 @@ export const products: Product[] = [
     price: 8.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 30,
     dataAiHint: 'energy drink'
   },
   {
@@ -64,6 +70,7 @@ export const products: Product[] = [
     price: 6.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 40,
     dataAiHint: 'beer bottle'
   },
   {
@@ -73,6 +80,7 @@ export const products: Product[] = [
     price: 3.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 18,
     dataAiHint: 'soda can'
   },
   {
@@ -82,6 +90,7 @@ export const products: Product[] = [
     price: 95.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 5,
     dataAiHint: 'whisky bottle'
   },
   {
@@ -91,6 +100,7 @@ export const products: Product[] = [
     price: 40.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Bebidas',
+    stock: 12,
     dataAiHint: 'vodka bottle'
   },
 
@@ -102,6 +112,7 @@ export const products: Product[] = [
     price: 28.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 2,
     dataAiHint: 'tobacco pouch'
   },
   {
@@ -111,6 +122,7 @@ export const products: Product[] = [
     price: 60.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 10,
     dataAiHint: 'vape pen'
   },
   {
@@ -120,6 +132,7 @@ export const products: Product[] = [
     price: 5.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 50,
     dataAiHint: 'rolling papers'
   },
   {
@@ -129,6 +142,7 @@ export const products: Product[] = [
     price: 12.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 20,
     dataAiHint: 'cigarette pack'
   },
   {
@@ -138,6 +152,7 @@ export const products: Product[] = [
     price: 7.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 35,
     dataAiHint: 'bic lighter'
   },
   {
@@ -147,6 +162,7 @@ export const products: Product[] = [
     price: 4.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 1,
     dataAiHint: 'cigarette filters'
   },
   {
@@ -156,6 +172,7 @@ export const products: Product[] = [
     price: 85.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 4,
     dataAiHint: 'cigar'
   },
   {
@@ -165,6 +182,7 @@ export const products: Product[] = [
     price: 15.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 22,
     dataAiHint: 'shisha tobacco'
   },
   {
@@ -174,6 +192,7 @@ export const products: Product[] = [
     price: 2.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 40,
     dataAiHint: 'filter tips'
   },
   {
@@ -183,6 +202,7 @@ export const products: Product[] = [
     price: 70.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Tabacaria',
+    stock: 3,
     dataAiHint: 'smoking pipe'
   },
   
@@ -194,6 +214,7 @@ export const products: Product[] = [
     price: 8.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 15,
     dataAiHint: 'chips bag'
   },
   {
@@ -203,6 +224,7 @@ export const products: Product[] = [
     price: 6.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 25,
     dataAiHint: 'peanuts'
   },
   {
@@ -212,6 +234,7 @@ export const products: Product[] = [
     price: 7.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 13,
     dataAiHint: 'doritos bag'
   },
   {
@@ -221,6 +244,7 @@ export const products: Product[] = [
     price: 9.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 18,
     dataAiHint: 'cheetos bag'
   },
   {
@@ -230,6 +254,7 @@ export const products: Product[] = [
     price: 9.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 22,
     dataAiHint: 'snack bag'
   },
   {
@@ -239,6 +264,7 @@ export const products: Product[] = [
     price: 15.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 9,
     dataAiHint: 'pringles can'
   },
   {
@@ -248,6 +274,7 @@ export const products: Product[] = [
     price: 3.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 30,
     dataAiHint: 'snack bag'
   },
   {
@@ -257,6 +284,7 @@ export const products: Product[] = [
     price: 5.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 14,
     dataAiHint: 'coated peanuts'
   },
   {
@@ -266,6 +294,7 @@ export const products: Product[] = [
     price: 18.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 7,
     dataAiHint: 'pistachios'
   },
   {
@@ -275,6 +304,7 @@ export const products: Product[] = [
     price: 6.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Salgadinhos',
+    stock: 3,
     dataAiHint: 'snack bag'
   },
 
@@ -286,6 +316,7 @@ export const products: Product[] = [
     price: 6.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 20,
     dataAiHint: 'chocolate bar'
   },
   {
@@ -295,6 +326,7 @@ export const products: Product[] = [
     price: 2.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 50,
     dataAiHint: 'gum package'
   },
   {
@@ -304,6 +336,7 @@ export const products: Product[] = [
     price: 2.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 100,
     dataAiHint: 'candy pack'
   },
   {
@@ -313,6 +346,7 @@ export const products: Product[] = [
     price: 1.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 80,
     dataAiHint: 'peanut candy'
   },
   {
@@ -322,6 +356,7 @@ export const products: Product[] = [
     price: 3.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 30,
     dataAiHint: 'chocolate wafer'
   },
   {
@@ -331,6 +366,7 @@ export const products: Product[] = [
     price: 12.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 10,
     dataAiHint: 'dulce de leche'
   },
   {
@@ -340,6 +376,7 @@ export const products: Product[] = [
     price: 7.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 25,
     dataAiHint: 'gummy candy'
   },
   {
@@ -349,6 +386,7 @@ export const products: Product[] = [
     price: 3.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 40,
     dataAiHint: 'cereal bar'
   },
   {
@@ -358,6 +396,7 @@ export const products: Product[] = [
     price: 1.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 150,
     dataAiHint: 'lollipop'
   },
   {
@@ -367,6 +406,7 @@ export const products: Product[] = [
     price: 5.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Doces',
+    stock: 2,
     dataAiHint: 'ice cream'
   },
 
@@ -378,6 +418,7 @@ export const products: Product[] = [
     price: 8.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 10,
     dataAiHint: 'plastic cups'
   },
   {
@@ -387,6 +428,7 @@ export const products: Product[] = [
     price: 4.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 15,
     dataAiHint: 'napkins'
   },
   {
@@ -396,6 +438,7 @@ export const products: Product[] = [
     price: 3.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 20,
     dataAiHint: 'birthday candle'
   },
   {
@@ -405,6 +448,7 @@ export const products: Product[] = [
     price: 15.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 5,
     dataAiHint: 'playing cards'
   },
   {
@@ -414,6 +458,7 @@ export const products: Product[] = [
     price: 45.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 8,
     dataAiHint: 'phone charger'
   },
   {
@@ -423,6 +468,7 @@ export const products: Product[] = [
     price: 18.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 12,
     dataAiHint: 'batteries'
   },
   {
@@ -432,6 +478,7 @@ export const products: Product[] = [
     price: 10.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 18,
     dataAiHint: 'trash bag'
   },
   {
@@ -441,6 +488,7 @@ export const products: Product[] = [
     price: 9.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 6,
     dataAiHint: 'super glue'
   },
   {
@@ -450,6 +498,7 @@ export const products: Product[] = [
     price: 7.50,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 2,
     dataAiHint: 'sanitary pad'
   },
   {
@@ -459,6 +508,7 @@ export const products: Product[] = [
     price: 6.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Diversos',
+    stock: 30,
     dataAiHint: 'condom pack'
   },
 
@@ -470,6 +520,7 @@ export const products: Product[] = [
     price: 10.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 8,
     dataAiHint: 'ice bag'
   },
   {
@@ -479,6 +530,7 @@ export const products: Product[] = [
     price: 18.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 12,
     dataAiHint: 'charcoal bag'
   },
   {
@@ -488,6 +540,7 @@ export const products: Product[] = [
     price: 15.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 20,
     dataAiHint: 'ice bag'
   },
   {
@@ -497,6 +550,7 @@ export const products: Product[] = [
     price: 12.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 15,
     dataAiHint: 'garlic bread'
   },
   {
@@ -506,6 +560,7 @@ export const products: Product[] = [
     price: 25.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 9,
     dataAiHint: 'olive oil'
   },
   {
@@ -515,6 +570,7 @@ export const products: Product[] = [
     price: 5.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 25,
     dataAiHint: 'salt bag'
   },
   {
@@ -524,6 +580,7 @@ export const products: Product[] = [
     price: 4.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 30,
     dataAiHint: 'matchbox'
   },
   {
@@ -533,6 +590,7 @@ export const products: Product[] = [
     price: 22.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 11,
     dataAiHint: 'coffee capsules'
   },
   {
@@ -542,6 +600,7 @@ export const products: Product[] = [
     price: 8.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 7,
     dataAiHint: 'sweetener bottle'
   },
   {
@@ -551,6 +610,7 @@ export const products: Product[] = [
     price: 20.00,
     imageUrl: 'https://placehold.co/200x200',
     category: 'Outros',
+    stock: 5,
     dataAiHint: 'dog food'
   }
 ];
