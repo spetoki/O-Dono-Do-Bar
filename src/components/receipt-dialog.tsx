@@ -1,3 +1,4 @@
+
 'use client';
 
 import { type FC, useState, useEffect, ChangeEvent } from 'react';
@@ -45,17 +46,33 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   change
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
+  const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       if (paymentMethod !== 'dinheiro') {
         onAmountPaidChange(total);
+        setAmountPaidDisplay(total.toFixed(2).replace('.', ','));
       } else {
-        // If switching to cash, ensure amount paid is what's in the state (likely 0)
-        onAmountPaidChange(amountPaid);
+        onAmountPaidChange(0);
+        setAmountPaidDisplay('');
       }
     }
-  }, [isOpen, paymentMethod, total, onAmountPaidChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, paymentMethod, total]);
+
+  useEffect(() => {
+     if (paymentMethod === 'dinheiro') {
+      if (amountPaid === 0) {
+        setAmountPaidDisplay('');
+      } else {
+        // This keeps the value from the state if it's not being actively edited
+        // setAmountPaidDisplay(amountPaid.toFixed(2).replace('.',','));
+      }
+    } else {
+      setAmountPaidDisplay(total.toFixed(2).replace('.',','));
+    }
+  }, [amountPaid, paymentMethod, total]);
 
 
   const formatCurrency = (amount: number) =>
@@ -70,23 +87,15 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    setAmountPaidDisplay(value);
+    
     // Allow empty string or valid number format
-    if (value === '' || /^\d*[,.]?\d*$/.test(value)) {
+    if (value === '' || /^\d*[,.]?\d{0,2}$/.test(value)) {
        const numericValue = parseFloat(value.replace(',', '.')) || 0;
        onAmountPaidChange(numericValue);
     }
   };
 
-  const getAmountPaidValue = () => {
-    if (paymentMethod !== 'dinheiro') {
-      return total.toFixed(2).replace('.', ',');
-    }
-    // Avoid showing 0 when the input is empty or focused
-    if (amountPaid === 0) {
-      return '';
-    }
-    return amountPaid.toFixed(2).replace('.', ',');
-  }
   
   if (!isOpen) return null;
 
@@ -99,7 +108,10 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => {
           e.preventDefault();
           if (paymentMethod === 'dinheiro') {
-             document.getElementById('amount-paid')?.focus();
+             const input = document.getElementById('amount-paid');
+             if (input) {
+              (input as HTMLInputElement).focus();
+             }
           }
       }}>
         <DialogHeader>
@@ -160,11 +172,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                     variant={paymentMethod === method ? 'default' : 'outline'}
                     onClick={() => {
                         setPaymentMethod(method);
-                        if (method !== 'dinheiro') {
-                            onAmountPaidChange(total);
-                        } else {
-                            onAmountPaidChange(0); // Clear amount paid when switching to cash
-                        }
                     }}
                     className="flex-1"
                   >
@@ -182,7 +189,14 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount-paid">Valor Pago</Label>
-                  <Input id="amount-paid" value={getAmountPaidValue()} onChange={handleAmountChange} readOnly={paymentMethod !== 'dinheiro'} className="text-right font-mono text-lg h-12" />
+                  <Input 
+                    id="amount-paid" 
+                    value={amountPaidDisplay} 
+                    onChange={handleAmountChange} 
+                    readOnly={paymentMethod !== 'dinheiro'} 
+                    className="text-right font-mono text-lg h-12" 
+                    placeholder="0,00"
+                  />
                 </div>
                 <div className="space-y-2">
                    <Label htmlFor="change">Troco</Label>
