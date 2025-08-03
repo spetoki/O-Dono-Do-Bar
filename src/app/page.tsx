@@ -18,6 +18,7 @@ import ReceiptDialog from '@/components/receipt-dialog';
 const Home: FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [initialCategory, setInitialCategory] = useState('Todos');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [amountPaid, setAmountPaid] = useState(0);
@@ -94,6 +95,11 @@ const Home: FC = () => {
     return amountPaid > total ? amountPaid - total : 0;
   }, [amountPaid, total]);
 
+  const openCatalog = (category: string = 'Todos') => {
+    setInitialCategory(category);
+    setIsCatalogOpen(true);
+  };
+
   const openFinalizeSaleDialog = () => {
     if (orderItems.length > 0) {
       setAmountPaid(0); // Reset amount paid so the input is blank for cash payments
@@ -123,7 +129,7 @@ const Home: FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'f7') {
         e.preventDefault();
-        setIsCatalogOpen(true);
+        openCatalog();
       }
       if (e.key.toLowerCase() === 'f8') {
         e.preventDefault();
@@ -158,7 +164,7 @@ const Home: FC = () => {
              {/* Left Column */}
             <div className="md:col-span-1 flex flex-col gap-4">
                 <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4">
-                  <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} />
+                  <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} onCategoryClick={openCatalog} />
                 </div>
             </div>
 
@@ -171,7 +177,7 @@ const Home: FC = () => {
                     <Barcode className="mr-2"/>
                     Escanear (F8)
                   </Button>
-                  <Button size="sm" variant="secondary" onClick={() => setIsCatalogOpen(true)}>
+                  <Button size="sm" variant="secondary" onClick={() => openCatalog()}>
                     <Search className="mr-2"/>
                     Pesquisar (F7)
                   </Button>
@@ -215,6 +221,7 @@ const Home: FC = () => {
         onClose={() => setIsCatalogOpen(false)}
         products={allProducts}
         onAddToOrder={(product) => addToOrder(product, 1)}
+        initialCategory={initialCategory}
       />
       <BarcodeScannerDialog
         isOpen={isScannerOpen}

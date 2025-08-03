@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 
 interface ProductRecommenderProps {
   onAddToOrder: (product: Product) => void;
+  onCategoryClick: (category: string) => void;
 }
 
 const categories = [
@@ -26,12 +27,7 @@ const categories = [
 
 const bestSellers: Product[] = products.slice(0, 10);
 
-const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder }) => {
-
-  const handleCategoryClick = (category: string) => {
-    // Futuramente, podemos abrir o catálogo na categoria selecionada.
-    console.log(`Category clicked: ${category}`);
-  };
+const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder, onCategoryClick }) => {
 
   return (
     <div className="space-y-4">
@@ -46,7 +42,7 @@ const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder }) => {
               key={category.name}
               variant="outline"
               className="h-24 flex flex-col items-center justify-center gap-2 p-2 text-center bg-primary/5 hover:bg-primary/10 border-primary/20"
-              onClick={() => handleCategoryClick(category.name)}
+              onClick={() => onCategoryClick(category.name)}
             >
               {category.icon}
               <span className="text-xs font-semibold">{category.name}</span>

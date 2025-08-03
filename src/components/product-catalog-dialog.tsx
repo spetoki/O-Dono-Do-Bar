@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Product } from '@/types';
 import {
   Dialog,
@@ -21,6 +21,7 @@ interface ProductCatalogDialogProps {
   onClose: () => void;
   products: Product[];
   onAddToOrder: (product: Product) => void;
+  initialCategory?: string;
 }
 
 const ProductCatalogDialog: FC<ProductCatalogDialogProps> = ({
@@ -28,9 +29,16 @@ const ProductCatalogDialog: FC<ProductCatalogDialogProps> = ({
   onClose,
   products,
   onAddToOrder,
+  initialCategory = 'Todos',
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedCategory(initialCategory);
+    }
+  }, [isOpen, initialCategory]);
 
   const categories = useMemo(() => {
     const allCategories = ['Todos', ...Array.from(new Set(products.map(p => p.category)))];
