@@ -8,6 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { salesData, type Sale } from '@/data/sales';
 import { subDays, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('pt-BR', {
@@ -80,9 +83,17 @@ export default function SalesPage() {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Relatório de Vendas</CardTitle>
-          <CardDescription>Analise o desempenho de suas vendas.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Relatório de Vendas</CardTitle>
+            <CardDescription>Analise o desempenho de suas vendas.</CardDescription>
+          </div>
+          <Link href="/">
+            <Button variant="outline">
+              <X className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           <Tabs value={timeRange} onValueChange={setTimeRange}>
