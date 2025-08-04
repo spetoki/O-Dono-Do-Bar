@@ -23,7 +23,6 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/auth-context';
-import QRCode from 'qrcode.react';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 type DiscountType = 'amount' | 'percentage';
@@ -191,7 +190,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         total: total,
         paymentMethod: paymentMethod,
         operatorId: user.id,
-        operatorName: user.name
+        operatorName: user.name,
     };
 
     const existingSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
@@ -228,73 +227,76 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
        }
   }
 
-  const receiptLines = useMemo(() => {
-    const lines: string[] = [];
-    const width = 46;
-  
-    const center = (text: string) => text.padStart((width + text.length) / 2).padEnd(width);
-    const line = (char = '-') => char.repeat(width);
-    const align = (left: string, right: string) => left.padEnd(width - right.length) + right;
-
-  
-    // Header
-    lines.push(center(`*** ${appSettings.companyName.toUpperCase()} ***`));
-    lines.push(center(`CNPJ: ${appSettings.companyCnpj}`));
-    lines.push(center(appSettings.companyAddress));
-    lines.push(center(`Tel: ${appSettings.companyPhone} | Instagram: ${appSettings.companyInstagram}`));
-    lines.push(line());
-    lines.push(center('CUPOM FISCAL - PDV 01'));
-    lines.push(line());
-    
-    // Sale Info
-    lines.push(`DATA: ${saleDate.current}`.padEnd(width / 2) + `HORA: ${saleTime.current}`.padStart(width / 2));
-    lines.push(`VENDEDOR: ${user?.name || 'N/A'}`);
-    lines.push(`CUPOM Nº: ${saleId.current.padStart(6, '0')}`);
-    lines.push('');
-
-    // Items Header
-    lines.push('ITEM   DESCRIÇÃO'.padEnd(23) + 'QTD  UN  VL.UN  TOTAL'.padStart(23));
-
-    // Items
-    orderItems.forEach((item, index) => {
-        const itemNum = (index + 1).toString().padStart(3, '0');
-        const name = item.product.name.substring(0, 15);
-        const qty = item.quantity.toString();
-        const price = item.product.price.toFixed(2);
-        const itemTotal = (item.product.price * item.quantity).toFixed(2);
-        
-        const line1 = `${itemNum}    ${name.padEnd(15)}`;
-        const line2 = `${qty.padStart(3)}  UN  ${price.padStart(5)}  ${itemTotal.padStart(5)}`;
-
-        lines.push(line1 + line2);
-    });
-
-    lines.push(line());
-
-    // Totals
-    lines.push(align('SUBTOTAL:', `R$ ${subtotal.toFixed(2)}`));
-    if (discountAmount > 0) {
-        lines.push(align('DESCONTO:', `R$ ${discountAmount.toFixed(2)}`));
-    }
-    lines.push(align('TOTAL A PAGAR:', `R$ ${total.toFixed(2)}`));
-    lines.push(align('FORMA DE PAGAMENTO:', paymentMethod.toUpperCase()));
-    if (paymentMethod === 'dinheiro') {
-        lines.push(align('TROCO:', `R$ ${change.toFixed(2)}`));
-    }
-    
-    lines.push(line());
-
-    // Footer
-    if(tax > 0) {
-      lines.push(center(`Tributos Totais Aprox. (Lei 12.741/12): R$ ${tax.toFixed(2)}`));
-    }
-    lines.push(center(`Emitido conforme o Ajuste SINIEF 07/05.`));
-    lines.push('');
-    lines.push(center(appSettings.receiptMessage));
-    lines.push(line());
-
-    return lines.join('\n');
-  }, [appSettings, orderItems, subtotal, discountAmount, total, paymentMethod, change, tax, user]);
+  const ReceiptContent = () => (
+    <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm mx-auto">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-bold">{appSettings.companyName}</h3>
+          <p className="text-xs">{appSettings.companyAddress}</p>
+          <p className="text-xs">CNPJ: {appSettings.companyCnpj}</p>
+          <p className="text-xs">Tel: {appSettings.companyPhone}</p>
+        </div>
+        <div className="border-t border-b border-dashed border-black my-2 py-1 text-xs">
+          <div className="flex justify-between">
+            <span>{saleDate.current} {saleTime.current}</span>
+            <span>Cupom: {saleId.current}</span>
+          </div>
+          <p>Operador: {user?.name}</p>
+          {cpf && <p>CPF: {cpf}</p>}
+        </div>
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-dashed border-black">
+              <th className="text-left font-normal py-1">Produto</th>
+              <th className="text-right font-normal py-1">Qtd</th>
+              <th className="text-right font-normal py-1">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orderItems.map((item) => (
+              <tr key={item.product.id}>
+                <td className="py-0.5">{item.product.name}</td>
+                <td className="text-right py-0.5">{item.quantity}</td>
+                <td className="text-right py-0.5">{formatCurrency(item.product.price * item.quantity)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="border-t border-dashed border-black mt-2 pt-2 text-xs space-y-1">
+          <div className="flex justify-between">
+            <span>SUBTOTAL</span>
+            <span>{formatCurrency(subtotal)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>DESCONTO</span>
+            <span>- {formatCurrency(discountAmount)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-sm">
+            <span>TOTAL</span>
+            <span>{formatCurrency(total)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>PAGAMENTO</span>
+            <span className="uppercase">{paymentMethod}</span>
+          </div>
+          {paymentMethod === 'dinheiro' && (
+            <>
+              <div className="flex justify-between">
+                <span>VALOR PAGO</span>
+                <span>{formatCurrency(localAmountPaid)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>TROCO</span>
+                <span>{formatCurrency(change)}</span>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="border-t border-dashed border-black mt-2 pt-2 text-center text-xs">
+          <p>Tributos aprox.: {formatCurrency(tax)} (Lei 12.741/12)</p>
+          <p className="mt-2">{appSettings.receiptMessage}</p>
+        </div>
+      </div>
+  )
 
   if (!isOpen) return null;
 
@@ -313,18 +315,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                     </div>
                     <DialogTitle className="text-3xl font-bold">Venda Concluída!</DialogTitle>
                 </DialogHeader>
-                 <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm font-mono text-xs">
-                    <pre className="whitespace-pre-wrap break-words">{receiptLines}</pre>
-                     <div className='flex justify-center pt-2'>
-                       <QRCode
-                            id='qr-code-receipt'
-                            value='https://github.com/firebase/genkit'
-                            size={80}
-                            level={'H'}
-                            includeMargin={false}
-                        />
-                    </div>
-                </div>
+                
+                <ReceiptContent />
 
                 <div className="flex gap-2 w-full max-w-sm">
                     <Button onClick={handlePrint} variant="outline" className="h-12 text-base flex-1">
@@ -346,10 +338,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-hidden">
                 {/* Left side: Receipt Preview */}
-                <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
-                   <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm font-mono text-xs">
-                     <pre className="whitespace-pre-wrap break-words">{receiptLines}</pre>
-                    </div>
+                <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-y-auto">
+                   <ReceiptContent />
                 </div>
 
                 {/* Right side: Payment options */}
@@ -455,4 +445,3 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
-
