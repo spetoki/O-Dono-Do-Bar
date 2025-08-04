@@ -1,4 +1,7 @@
 
+'use client';
+
+import Link from 'next/link';
 import { products } from '@/data/products';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -11,12 +14,20 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 export default function InventoryPage() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Gerenciamento de Estoque</CardTitle>
+        <Link href="/">
+          <Button variant="outline">
+            <X className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
+        </Link>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[70vh]">
