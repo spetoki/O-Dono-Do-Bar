@@ -6,16 +6,18 @@ import { useTheme } from '@/context/theme-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { X, Check, Save, Paintbrush, Building, ShoppingCart } from 'lucide-react';
+import { X, Check, Save, Paintbrush, Building, ShoppingCart, Sun, Moon } from 'lucide-react';
 import { themes } from '@/lib/themes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Separator } from '@/components/ui/separator';
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, mode, setMode } = useTheme();
   const { toast } = useToast();
 
   // State for all settings
@@ -66,10 +68,29 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <TabsContent value="appearance" className="space-y-6">
+               <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Modo de Exibição</h3>
+                <p className="text-sm text-muted-foreground">
+                  Escolha entre o tema claro ou escuro para a interface.
+                </p>
+                 <ToggleGroup type="single" value={mode} onValueChange={(value) => setMode(value as 'light' | 'dark')} className="pt-2">
+                    <ToggleGroupItem value="light" aria-label="Tema Claro" className="flex items-center gap-2">
+                        <Sun className="h-4 w-4" />
+                        Claro
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="dark" aria-label="Tema Escuro" className="flex items-center gap-2">
+                        <Moon className="h-4 w-4" />
+                        Escuro
+                    </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+
+              <Separator />
+
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Cor do Tema</h3>
                 <p className="text-sm text-muted-foreground">
-                  Escolha uma cor principal para a interface do sistema.
+                  Escolha uma cor principal para os destaques do sistema.
                 </p>
                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4 pt-2">
                   {themes.map((item) => (
