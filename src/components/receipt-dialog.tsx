@@ -133,7 +133,29 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   };
   
   const handleFinalize = () => {
-    // Here you could add logic to save the sale, CPF, etc.
+    if (paymentMethod === 'fiado' && selectedCustomer) {
+      const customerId = parseInt(selectedCustomer, 10);
+      
+      // Update debt in initial customers if found there
+      const initialCustomerIndex = initialCustomers.findIndex(c => c.id === customerId);
+      if (initialCustomerIndex !== -1) {
+        // This is a demo; in a real app, this would be an API call.
+        // We're modifying the in-memory array, which won't persist across reloads
+        // but will update for the current session's view if the data source is not re-fetched.
+        console.warn("Debt of initial customers is not persisted in this demo.");
+      }
+
+      // Update debt in localStorage
+      const storedCustomers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
+      const updatedCustomers = storedCustomers.map(c => {
+        if (c.id === customerId) {
+          return { ...c, debt: c.debt + total };
+        }
+        return c;
+      });
+      localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+    }
+
     console.log(`Venda finalizada com CPF: ${cpf}, Cliente: ${selectedCustomer}, ID: ${saleId.current}`);
     toast({
         title: "Venda Finalizada!",
@@ -190,7 +212,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
             {/* Left side: Receipt Preview */}
             <div className="bg-muted/30 p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
-                <div className="printable-area font-mono text-xs p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col">
+                <div className="printable-area font-mono text-xs p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col scale-[0.8] origin-top">
                     <header className="text-center space-y-1 flex-shrink-0">
                         <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
                         <p className="text-[10px]">CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
@@ -372,3 +394,5 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
+
+    
