@@ -145,7 +145,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             onClose();
         }
     }}>
-      <DialogContent className="max-w-sm max-h-[90vh] flex flex-col" onOpenAutoFocus={(e) => {
+      <DialogContent className="max-w-sm max-h-[95vh] flex flex-col p-4" onOpenAutoFocus={(e) => {
           e.preventDefault();
           const input = document.getElementById('amount-paid');
           if (input && paymentMethod === 'dinheiro') {
@@ -153,8 +153,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             (input as HTMLInputElement).select();
           }
       }}>
-        <ScrollArea className="flex-1 pr-4">
-            <div className="printable-area font-mono text-xs p-2 bg-white text-black">
+        <div className="flex-shrink-0">
+            <div className="printable-area font-mono text-xs p-2 bg-white text-black border border-dashed border-black/50 rounded-sm">
                 <header className="text-center space-y-1">
                     <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
                     <p>CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
@@ -178,7 +178,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         <div className="col-span-3 text-right">TOTAL</div>
                     </div>
                     <Separator className="border-dashed border-black" />
-                    <div className="max-h-32 my-1 overflow-y-auto">
+                    <div className="max-h-28 my-1 overflow-y-auto">
                         {orderItems.map((item) => (
                             <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
                                 <div className="col-span-6 truncate">{item.product.name}</div>
@@ -235,83 +235,85 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                     </div>
                 </footer>
             </div>
+        </div>
 
-            {paymentMethod !== 'fiado' && (
-            <div className="space-y-2 mt-4">
-                <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
-                <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-            </div>
-            )}
-            
-            <Separator className="my-4"/>
-            
-            <div>
-                <Label className="text-sm font-medium">Forma de Pagamento</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                {(['dinheiro', 'cartao', 'pix', 'fiado'] as PaymentMethod[]).map(method => (
-                    <Button 
-                        key={method}
-                        variant={paymentMethod === method ? 'default' : 'outline'}
-                        onClick={() => setPaymentMethod(method)}
-                        className="flex-1"
-                    >
-                        {method === 'dinheiro' && <DollarSign />}
-                        {method === 'cartao' && <CreditCard />}
-                        {method === 'pix' && <Landmark />}
-                        {method === 'fiado' && <ClipboardList />}
-                        <span className="capitalize ml-2">{method}</span>
-                    </Button>
-                ))}
+        <ScrollArea className="flex-1 -mr-4 pr-4">
+            <div className="space-y-4 pt-2">
+                {paymentMethod !== 'fiado' && (
+                <div className="space-y-2">
+                    <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
+                    <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
                 </div>
-            </div>
-
-            {paymentMethod === 'dinheiro' && (
-                <div className="space-y-2 animate-fade-in mt-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                        <Label htmlFor="amount-paid">Valor Pago</Label>
-                        <Input 
-                            id="amount-paid" 
-                            value={amountPaidDisplay} 
-                            onChange={handleAmountChange} 
-                            className="text-right font-mono text-lg h-12" 
-                            placeholder="0,00"
-                        />
-                        </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="change">Troco</Label>
-                        <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
-                        </div>
+                )}
+                
+                <div>
+                    <Label className="text-sm font-medium">Forma de Pagamento</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                    {(['dinheiro', 'cartao', 'pix', 'fiado'] as PaymentMethod[]).map(method => (
+                        <Button 
+                            key={method}
+                            variant={paymentMethod === method ? 'default' : 'outline'}
+                            onClick={() => setPaymentMethod(method)}
+                            className="flex-1"
+                        >
+                            {method === 'dinheiro' && <DollarSign />}
+                            {method === 'cartao' && <CreditCard />}
+                            {method === 'pix' && <Landmark />}
+                            {method === 'fiado' && <ClipboardList />}
+                            <span className="capitalize ml-2">{method}</span>
+                        </Button>
+                    ))}
                     </div>
                 </div>
-            )}
-            {paymentMethod === 'fiado' && (
-            <div className="space-y-2 animate-fade-in mt-4">
-                <Label htmlFor="customer-select">Selecionar Cliente</Label>
-                <div className="flex gap-2">
-                    <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
-                        <SelectTrigger id="customer-select" className="flex-1">
-                            <SelectValue placeholder="Escolha um cliente..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {customers.map((customer) => (
-                                <SelectItem key={customer.id} value={customer.id.toString()}>
-                                    {customer.name} - {customer.cpf}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="icon">
-                        <UserPlus className="h-4 w-4"/>
-                        <span className="sr-only">Adicionar Cliente</span>
-                    </Button>
+
+                {paymentMethod === 'dinheiro' && (
+                    <div className="space-y-2 animate-fade-in">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                            <Label htmlFor="amount-paid">Valor Pago</Label>
+                            <Input 
+                                id="amount-paid" 
+                                value={amountPaidDisplay} 
+                                onChange={handleAmountChange} 
+                                className="text-right font-mono text-lg h-12" 
+                                placeholder="0,00"
+                            />
+                            </div>
+                            <div className="space-y-2">
+                            <Label htmlFor="change">Troco</Label>
+                            <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {paymentMethod === 'fiado' && (
+                <div className="space-y-2 animate-fade-in">
+                    <Label htmlFor="customer-select">Selecionar Cliente</Label>
+                    <div className="flex gap-2">
+                        <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
+                            <SelectTrigger id="customer-select" className="flex-1">
+                                <SelectValue placeholder="Escolha um cliente..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {customers.map((customer) => (
+                                    <SelectItem key={customer.id} value={customer.id.toString()}>
+                                        {customer.name} - {customer.cpf}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button variant="outline" size="icon">
+                            <UserPlus className="h-4 w-4"/>
+                            <span className="sr-only">Adicionar Cliente</span>
+                        </Button>
+                    </div>
                 </div>
+                )}
             </div>
-            )}
         </ScrollArea>
         
 
-        <DialogFooter className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t">
+        <DialogFooter className="grid grid-cols-3 gap-2 mt-2 pt-4 border-t flex-shrink-0">
             <Button variant="outline" onClick={onClose}>
               <XCircle className="mr-2" /> Fechar
             </Button>
