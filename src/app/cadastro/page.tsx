@@ -31,6 +31,7 @@ const productSchema = z.object({
   category: z.string().min(3, { message: 'A categoria deve ter pelo menos 3 caracteres.' }),
   description: z.string().optional(),
   image: z.any().optional(),
+  imageUrl: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -141,42 +142,30 @@ export default function NewProductPage() {
   
   const fileRef = form.register('image');
 
-  const onSubmit = async (data: ProductFormValues) => {
-    const formData = new FormData();
-
-    const appendOtherDataAndDispatch = (formData: FormData, data: ProductFormValues) => {
-        Object.entries(data).forEach(([key, value]) => {
-            if (key !== 'image' && value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
-        });
-        dispatch(formData);
-    };
-    
-    // Handle file upload
+  const onSubmit = (formData: FormData) => {
+    const data = form.getValues();
     if (data.image && data.image.length > 0) {
-        const file = data.image[0];
-        const reader = new FileReader();
-        
-        reader.onload = () => {
-            const base64Image = reader.result as string;
-            formData.append('imageUrl', base64Image);
-            appendOtherDataAndDispatch(formData, data);
-        };
+      const file = data.image[0];
+      const reader = new FileReader();
 
-        reader.onerror = (error) => {
-            console.error("Error converting image to base64:", error);
-            toast({
-                title: 'Erro de Imagem',
-                description: 'Não foi possível processar a imagem. Tente novamente.',
-                variant: 'destructive',
-            });
-        };
+      reader.onload = () => {
+        const base64Image = reader.result as string;
+        formData.set('imageUrl', base64Image);
+        dispatch(formData);
+      };
 
-        reader.readAsDataURL(file);
+      reader.onerror = (error) => {
+        console.error("Error converting image to base64:", error);
+        toast({
+          title: 'Erro de Imagem',
+          description: 'Não foi possível processar a imagem. Tente novamente.',
+          variant: 'destructive',
+        });
+      };
+
+      reader.readAsDataURL(file);
     } else {
-        // No image, just append other data and dispatch
-        appendOtherDataAndDispatch(formData, data);
+      dispatch(formData);
     }
   };
 
@@ -192,7 +181,7 @@ export default function NewProductPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form action={dispatch} className="space-y-4">
                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2 space-y-4">
                      <FormField
@@ -360,3 +349,5 @@ export default function NewProductPage() {
     </div>
   );
 }
+
+    

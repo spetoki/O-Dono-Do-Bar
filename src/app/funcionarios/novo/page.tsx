@@ -91,14 +91,6 @@ export default function NewUserPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, router, toast]);
-  
-  const onSubmit = (data: UserFormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-    dispatch(formData);
-  };
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -109,7 +101,7 @@ export default function NewUserPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form action={dispatch} className="space-y-4">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -204,3 +196,5 @@ export default function NewUserPage() {
     </div>
   );
 }
+
+    

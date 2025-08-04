@@ -164,45 +164,34 @@ export default function EditProductPage() {
   
   const fileRef = form.register('image');
 
-  const onSubmit = async (data: ProductFormValues) => {
-    const formData = new FormData();
-    formData.append('id', String(data.id)); // Important: pass the ID
-
-    const appendOtherDataAndDispatch = (formData: FormData, data: ProductFormValues) => {
-        Object.entries(data).forEach(([key, value]) => {
-            // Don't append image file itself or old imageUrl
-            if (key !== 'image' && key !== 'imageUrl' && value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
-        });
-        dispatch(formData);
-    };
-    
+  const onSubmit = (formData: FormData) => {
+    const data = form.getValues();
     if (data.image && data.image.length > 0) {
-        const file = data.image[0];
-        const reader = new FileReader();
-        
-        reader.onload = () => {
-            const base64Image = reader.result as string;
-            formData.append('imageUrl', base64Image); // new base64 image
-            appendOtherDataAndDispatch(formData, data);
-        };
+      const file = data.image[0];
+      const reader = new FileReader();
 
-        reader.onerror = (error) => {
-            console.error("Error converting image to base64:", error);
-            toast({
-                title: 'Erro de Imagem',
-                description: 'Não foi possível processar a imagem. Tente novamente.',
-                variant: 'destructive',
-            });
-        };
+      reader.onload = () => {
+        const base64Image = reader.result as string;
+        formData.set('imageUrl', base64Image); // new base64 image
+        dispatch(formData);
+      };
 
-        reader.readAsDataURL(file);
+      reader.onerror = (error) => {
+        console.error("Error converting image to base64:", error);
+        toast({
+          title: 'Erro de Imagem',
+          description: 'Não foi possível processar a imagem. Tente novamente.',
+          variant: 'destructive',
+        });
+      };
+
+      reader.readAsDataURL(file);
     } else {
-        formData.append('imageUrl', data.imageUrl || 'https://placehold.co/200x200'); // keep old image
-        appendOtherDataAndDispatch(formData, data);
+      formData.set('imageUrl', data.imageUrl || 'https://placehold.co/200x200'); // keep old image
+      dispatch(formData);
     }
   };
+
 
   const uniqueCategories = useMemo(() => [...new Set(initialProducts.map(p => p.category))], []);
 
@@ -251,7 +240,7 @@ export default function EditProductPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form action={dispatch} className="space-y-4">
                {/* Hidden ID field */}
                <FormField name="id" control={form.control} render={({ field }) => <Input type="hidden" {...field} />} />
 
@@ -422,3 +411,5 @@ export default function EditProductPage() {
     </div>
   );
 }
+
+    

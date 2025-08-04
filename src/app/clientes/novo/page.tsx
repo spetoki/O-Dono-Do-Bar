@@ -85,14 +85,6 @@ export default function NewCustomerPage() {
       return () => clearTimeout(timer);
     }
   }, [state, toast, router]);
-  
-  const onSubmit = (data: CustomerFormValues) => {
-    const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('cpf', data.cpf);
-    formData.append('phone', data.phone);
-    dispatch(formData);
-  };
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -103,7 +95,7 @@ export default function NewCustomerPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form action={dispatch} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -162,3 +154,5 @@ export default function NewCustomerPage() {
     </div>
   );
 }
+
+    
