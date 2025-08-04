@@ -64,8 +64,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         doc.classList.remove('dark');
         // Apply light-mode background variables
         doc.style.setProperty('--background', `hsl(${background.light.background})`);
-        doc.style.setProperty('--card', `hsl(${background.light.card})`);
-        doc.style.setProperty('--popover', `hsl(${background.light.popover})`);
+        doc.style.setProperty('--card', 'hsl(0 0% 100%)'); // Always white in light mode
+        doc.style.setProperty('--popover', 'hsl(0 0% 100%)'); // Always white in light mode
       }
       localStorage.setItem('app-mode', mode);
       localStorage.setItem('app-background', background.name);
