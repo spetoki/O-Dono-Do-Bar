@@ -208,41 +208,43 @@ export default function CloseoutPage() {
             </CardContent>
           </Card>
 
-           <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>Vendas Realizadas Hoje</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[400px] overflow-y-auto">
-                    <div className="w-full overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead>Horário</TableHead>
-                                <TableHead>Itens</TableHead>
-                                <TableHead>Pagamento</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {todaysSales.map((sale) => (
-                                    <TableRow key={sale.id}>
-                                        <TableCell className="font-mono text-xs">{formatDate(new Date(sale.date))}</TableCell>
-                                        <TableCell className="truncate max-w-[200px] text-xs">{sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}</TableCell>
-                                        <TableCell className="capitalize">{sale.paymentMethod}</TableCell>
-                                        <TableCell className="text-right font-medium">{formatCurrency(sale.total)}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                            <TableFooter>
-                                <TableRow>
-                                    <TableCell colSpan={3} className="text-right font-bold text-base">Total do Dia</TableCell>
-                                    <TableCell className="text-right font-bold font-mono text-base">{formatCurrency(totalRevenue)}</TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+          {user?.role === 'admin' && (
+            <Card className="mt-6">
+                  <CardHeader>
+                      <CardTitle>Vendas Realizadas Hoje</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[400px] overflow-y-auto">
+                      <div className="w-full overflow-x-auto">
+                          <Table>
+                              <TableHeader>
+                              <TableRow>
+                                  <TableHead>Horário</TableHead>
+                                  <TableHead>Itens</TableHead>
+                                  <TableHead>Pagamento</TableHead>
+                                  <TableHead className="text-right">Total</TableHead>
+                              </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                  {todaysSales.map((sale) => (
+                                      <TableRow key={sale.id}>
+                                          <TableCell className="font-mono text-xs">{formatDate(new Date(sale.date))}</TableCell>
+                                          <TableCell className="truncate max-w-[200px] text-xs">{sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}</TableCell>
+                                          <TableCell className="capitalize">{sale.paymentMethod}</TableCell>
+                                          <TableCell className="text-right font-medium">{formatCurrency(sale.total)}</TableCell>
+                                      </TableRow>
+                                  ))}
+                              </TableBody>
+                              <TableFooter>
+                                  <TableRow>
+                                      <TableCell colSpan={3} className="text-right font-bold text-base">Total do Dia</TableCell>
+                                      <TableCell className="text-right font-bold font-mono text-base">{formatCurrency(totalRevenue)}</TableCell>
+                                  </TableRow>
+                              </TableFooter>
+                          </Table>
+                      </div>
+                  </CardContent>
+              </Card>
+           )}
         </CardContent>
       </Card>
     </div>
