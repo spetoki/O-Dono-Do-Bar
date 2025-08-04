@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { X, Printer, Calculator, Scale } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('pt-BR', {
