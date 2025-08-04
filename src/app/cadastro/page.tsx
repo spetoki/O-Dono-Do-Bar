@@ -17,12 +17,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
-import { Save, X, Percent, Upload } from 'lucide-react';
+import { Save, X, Percent, Upload, Barcode } from 'lucide-react';
 import { products as initialProducts } from '@/data/products';
 import type { Product } from '@/types';
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
+  barcode: z.string().optional(),
   costPrice: z.coerce.number().positive({ message: 'O custo deve ser um número positivo.' }),
   profitMargin: z.coerce.number().min(0, { message: 'A margem de lucro não pode ser negativa.'}),
   price: z.coerce.number().positive({ message: 'O preço de venda deve ser positivo.' }),
@@ -46,6 +47,7 @@ export default function NewProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
+      barcode: '',
       costPrice: 0,
       profitMargin: 20, // Default profit margin
       price: 0,
@@ -289,7 +291,23 @@ export default function NewProductPage() {
                 />
               </div>
 
-               <div className="grid grid-cols-2 gap-4">
+               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="barcode"
+                    render={({ field }) => (
+                    <FormItem className="col-span-2 md:col-span-1">
+                        <FormLabel>Código de Barras</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input type="text" placeholder="Escanear ou digitar" {...field} className="pl-8" />
+                            <Barcode className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                           </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
                  <FormField
                     control={form.control}
                     name="stock"

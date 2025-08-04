@@ -6,6 +6,7 @@ import type { Product } from '@/types';
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
+  barcode: z.string().optional(),
   costPrice: z.coerce.number().positive({ message: 'O custo deve ser um número positivo.' }),
   price: z.coerce.number().positive({ message: 'O preço de venda deve ser um número positivo.' }),
   stock: z.coerce.number().int().min(0, { message: 'O estoque não pode ser negativo.' }),
@@ -28,6 +29,7 @@ export async function createProduct(
   try {
     const validatedFields = productSchema.safeParse({
       name: formData.get('name'),
+      barcode: formData.get('barcode'),
       costPrice: formData.get('costPrice'),
       price: formData.get('price'),
       stock: formData.get('stock'),

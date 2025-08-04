@@ -26,7 +26,7 @@ const formatCurrency = (amount: number) =>
   }).format(amount);
 
 export default function InventoryPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const storedProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
@@ -63,7 +63,7 @@ export default function InventoryPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Código</TableHead>
+                <TableHead className="w-[150px]">Cód. Barras</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Preço</TableHead>
@@ -73,7 +73,7 @@ export default function InventoryPage() {
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell className="font-mono">{product.id}</TableCell>
+                  <TableCell className="font-mono">{product.barcode || product.id}</TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>
                    <TableCell className="text-right font-mono">

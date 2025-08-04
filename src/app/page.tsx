@@ -26,6 +26,16 @@ const Home: FC = () => {
   const [amountPaid, setAmountPaid] = useState(0);
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const { toast } = useToast();
+  const [products, setProducts] = useState<Product[]>(allProducts);
+
+  useEffect(() => {
+    // Load products from localStorage and merge with initial products
+    const storedProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
+    const allProductIds = new Set(allProducts.map(p => p.id));
+    const uniqueStoredProducts = storedProducts.filter(p => !allProductIds.has(p.id));
+
+    setProducts([...allProducts, ...uniqueStoredProducts]);
+  }, []);
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
     setOrderItems((prevItems) => {
@@ -44,7 +54,7 @@ const Home: FC = () => {
   }, []);
   
   const handleScan = (barcode: string) => {
-    const product = allProducts.find(p => p.id.toString() === barcode);
+    const product = products.find(p => p.barcode === barcode);
     if (product) {
       addToOrder(product, 1);
       setIsScannerOpen(false);
@@ -240,7 +250,7 @@ const Home: FC = () => {
       <ProductCatalogDialog 
         isOpen={isCatalogOpen} 
         onClose={() => setIsCatalogOpen(false)}
-        products={allProducts}
+        products={products}
         onAddToOrder={(product) => addToOrder(product, 1)}
         initialCategory={initialCategory}
       />
