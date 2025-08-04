@@ -6,7 +6,7 @@ import { useTheme } from '@/context/theme-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { X, Check, Save, Paintbrush, Building, ShoppingCart, Sun, Moon } from 'lucide-react';
+import { X, Check, Save, Paintbrush, Building, ShoppingCart, Sun, Moon, Instagram } from 'lucide-react';
 import { themes } from '@/lib/themes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ export default function SettingsPage() {
     companyCnpj: '',
     companyAddress: '',
     companyPhone: '',
+    companyInstagram: '',
     taxRate: '0.00',
     receiptMessage: 'Obrigado pela preferência! Volte sempre!',
   });
@@ -142,9 +143,18 @@ export default function SettingsPage() {
                     <Label htmlFor="companyAddress">Endereço</Label>
                     <Input id="companyAddress" name="companyAddress" value={settings.companyAddress} onChange={handleInputChange} placeholder="Ex: Rua da Cerveja, 123 - Cascavel, PR" />
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="companyPhone">Telefone</Label>
-                    <Input id="companyPhone" name="companyPhone" value={settings.companyPhone} onChange={handleInputChange} placeholder="Ex: (45) 99999-8888" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="companyPhone">Telefone</Label>
+                        <Input id="companyPhone" name="companyPhone" value={settings.companyPhone} onChange={handleInputChange} placeholder="Ex: (45) 99999-8888" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="companyInstagram">Instagram</Label>
+                        <div className="relative">
+                            <Input id="companyInstagram" name="companyInstagram" value={settings.companyInstagram} onChange={handleInputChange} placeholder="@seuusuario" className="pl-8"/>
+                            <Instagram className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        </div>
+                    </div>
                 </div>
             </TabsContent>
             
@@ -184,5 +194,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

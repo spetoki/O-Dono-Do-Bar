@@ -12,19 +12,17 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import type { OrderItem, Customer, Sale } from '@/types';
-import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { customers as initialCustomers } from '@/data/customers';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw, ShoppingCart } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw } from 'lucide-react';
 import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/auth-context';
-import QRCode from 'qrcode.react';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 type DiscountType = 'amount' | 'percentage';
@@ -68,6 +66,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     companyCnpj: '00.000.000/0001-00',
     companyAddress: 'Rua da Cerveja, 123 - Cascavel, PR',
     companyPhone: '(45) 99999-8888',
+    companyInstagram: '@odonodobar',
     taxRate: '0.00',
     receiptMessage: 'Obrigado pela preferência! Volte sempre!',
   });
@@ -103,10 +102,10 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      saleId.current = Math.random().toString(36).substring(2, 10).toUpperCase();
+      saleId.current = String(Math.floor(Math.random() * 900000) + 100000);
       const now = new Date();
       saleDate.current = now.toLocaleDateString('pt-BR');
-      saleTime.current = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      saleTime.current = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
       const loadedSettings = localStorage.getItem('appSettings');
       if (loadedSettings) {
@@ -228,15 +227,73 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
        }
   }
 
-  const totalItems = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+  const receiptLines = useMemo(() => {
+    const lines: string[] = [];
+    const width = 46;
   
-  const customerNameForReceipt = useMemo(() => {
-    if (paymentMethod === 'fiado' && selectedCustomer) {
-        const customer = customers.find(c => c.id.toString() === selectedCustomer);
-        return customer ? customer.name : 'N/A';
+    const center = (text: string) => text.padStart((width + text.length) / 2).padEnd(width);
+    const line = (char = '-') => char.repeat(width);
+  
+    // Header
+    lines.push(center(`*** ${appSettings.companyName.toUpperCase()} ***`));
+    lines.push(center(`CNPJ: ${appSettings.companyCnpj}`));
+    lines.push(center(appSettings.companyAddress));
+    lines.push(center(`Tel: ${appSettings.companyPhone} | Instagram: ${appSettings.companyInstagram}`));
+    lines.push(line());
+    lines.push(center('CUPOM FISCAL - PDV 01'));
+    lines.push(line());
+    
+    // Sale Info
+    lines.push(`DATA: ${saleDate.current}`.padEnd(width / 2) + `HORA: ${saleTime.current}`.padStart(width / 2));
+    lines.push(`VENDEDOR: ${user?.name || 'N/A'}`);
+    lines.push(`CUPOM Nº: ${saleId.current.padStart(6, '0')}`);
+    lines.push('');
+
+    // Items Header
+    lines.push('ITEM   DESCRIÇÃO'.padEnd(23) + 'QTD  UN  VL.UN  TOTAL'.padStart(23));
+
+    // Items
+    orderItems.forEach((item, index) => {
+        const itemNum = (index + 1).toString().padStart(3, '0');
+        const name = item.product.name.substring(0, 15);
+        const qty = item.quantity.toString();
+        const price = item.product.price.toFixed(2);
+        const itemTotal = (item.product.price * item.quantity).toFixed(2);
+        
+        const line1 = `${itemNum}    ${name.padEnd(15)}`;
+        const line2 = `${qty.padStart(3)}  UN  ${price.padStart(5)}  ${itemTotal.padStart(5)}`;
+
+        lines.push(line1 + line2);
+    });
+
+    lines.push(line());
+
+    // Totals
+    const formatTotals = (label: string, value: string) => `${label.padEnd(width - value.length)}${value}`;
+    lines.push(formatTotals('SUBTOTAL:', `R$ ${subtotal.toFixed(2)}`));
+    if (discountAmount > 0) {
+        lines.push(formatTotals('DESCONTO:', `R$ ${discountAmount.toFixed(2)}`));
     }
-    return null;
-  }, [paymentMethod, selectedCustomer, customers]);
+    lines.push(formatTotals('TOTAL A PAGAR:', `R$ ${total.toFixed(2)}`));
+    lines.push(formatTotals('FORMA DE PAGAMENTO:', paymentMethod.toUpperCase()));
+    if (paymentMethod === 'dinheiro') {
+        lines.push(formatTotals('TROCO:', `R$ ${change.toFixed(2)}`));
+    }
+    
+    lines.push(line());
+
+    // Footer
+    if(tax > 0) {
+        lines.push(center(`Tributos Totais Aprox. (Lei 12.741/12): R$ ${tax.toFixed(2)}`));
+    }
+    lines.push(center(`Emitido conforme o Ajuste SINIEF 07/05.`));
+    lines.push('');
+    lines.push(center(appSettings.receiptMessage));
+    lines.push(center(`Volte sempre! 🍻`));
+    lines.push(line());
+
+    return lines.join('\n');
+  }, [appSettings, orderItems, subtotal, discountAmount, total, paymentMethod, change, tax, user]);
 
   if (!isOpen) return null;
 
@@ -252,97 +309,13 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                 <DialogHeader>
                     <DialogTitle className="text-3xl font-bold">Venda Concluída!</DialogTitle>
                 </DialogHeader>
-                 <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-[380px] font-sans">
-                    <div className='text-center'>
-                      <div className="flex justify-center mb-2">
-                        <ShoppingCart className="h-10 w-10 text-black" />
-                      </div>
-                      <h2 className="text-xl font-bold">{appSettings.companyName}</h2>
-                      <p className="text-xs">{appSettings.companyAddress}</p>
-                      <p className="text-xs">CNPJ: {appSettings.companyCnpj} | Fone: {appSettings.companyPhone}</p>
-                    </div>
-
-                    <Separator className="border-dashed border-black my-3"/>
-                    
-                    <div className="text-xs text-center">
-                      <p>CUPOM NÃO FISCAL</p>
-                      <div className="flex justify-between">
-                        <span>{saleId.current}</span>
-                        <span>{saleDate.current} - {saleTime.current}</span>
-                      </div>
-                    </div>
-                    
-                     <Separator className="border-dashed border-black my-3"/>
-
-                    <div className="text-xs">
-                        <div className="grid grid-cols-12 font-bold mb-1">
-                            <div className="col-span-7">ITEM</div>
-                            <div className="col-span-2 text-center">QTD</div>
-                            <div className="col-span-3 text-right">TOTAL</div>
-                        </div>
-                         {orderItems.map((item) => (
-                            <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
-                                <div className="col-span-7 truncate">
-                                    {item.product.name}
-                                    <div className="text-gray-500 text-[10px] -mt-1">{formatCurrency(item.product.price)}/un</div>
-                                </div>
-                                <div className="col-span-2 text-center">{item.quantity}</div>
-                                <div className="col-span-3 text-right font-medium">{formatCurrency(item.product.price * item.quantity)}</div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Separator className="border-dashed border-black my-3"/>
-
-                    <div className="text-xs space-y-1">
-                        <div className="flex justify-between">
-                            <span>Subtotal</span>
-                            <span>{formatCurrency(subtotal)}</span>
-                        </div>
-                         {discountAmount > 0 && (
-                            <div className="flex justify-between text-red-600">
-                                <span>Desconto</span>
-                                <span>- {formatCurrency(discountAmount)}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between font-bold text-base">
-                            <span>TOTAL</span>
-                            <span>{formatCurrency(total)}</span>
-                        </div>
-                        <Separator className="border-dashed border-black my-1"/>
-                         <div className="flex justify-between">
-                            <span>Método de Pagamento</span>
-                            <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado` : paymentMethod}</span>
-                        </div>
-                         {paymentMethod === 'fiado' && customerNameForReceipt && (
-                             <div className="flex justify-between">
-                                <span>Cliente</span>
-                                <span>{customerNameForReceipt}</span>
-                             </div>
-                         )}
-                         <div className="flex justify-between">
-                            <span>Valor Recebido</span>
-                            <span>{formatCurrency(localAmountPaid)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Troco</span>
-                            <span>{formatCurrency(change)}</span>
-                        </div>
-                    </div>
-                     <Separator className="border-dashed border-black my-3"/>
-                      <div className="text-center text-xs space-y-2">
-                        {tax > 0 && <p>Tributos Totais Aprox. (Lei 12.741/12): {formatCurrency(tax)}</p>}
-                        <p>{appSettings.receiptMessage}</p>
-                         <div className="flex justify-center pt-2">
-                            {/* In a real app, this QR code would contain payment or invoice info */}
-                            <QRCode value={typeof window !== 'undefined' ? window.location.href : ''} size={80} bgColor="#ffffff" fgColor="#000000" />
-                        </div>
-                      </div>
+                 <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm font-mono text-xs">
+                    <pre className="whitespace-pre-wrap break-words">{receiptLines}</pre>
                 </div>
 
-                <div className="flex gap-2 w-full max-w-[380px]">
+                <div className="flex gap-2 w-full max-w-sm">
                     <Button onClick={handlePrint} variant="outline" className="h-12 text-base flex-1">
-                        <Printer className="mr-2" /> Imprimir
+                        <Printer className="mr-2" /> Imprimir Recibo
                     </Button>
                     <Button onClick={handleNewSale} className="h-12 text-base flex-1">
                         <RotateCw className="mr-2" /> Nova Venda
@@ -361,89 +334,9 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-hidden">
                 {/* Left side: Receipt Preview */}
                 <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
-                   <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-[380px] font-sans">
-                    <div className='text-center'>
-                      <div className="flex justify-center mb-2">
-                        <ShoppingCart className="h-10 w-10 text-black" />
-                      </div>
-                      <h2 className="text-xl font-bold">{appSettings.companyName}</h2>
-                      <p className="text-xs">{appSettings.companyAddress}</p>
-                      <p className="text-xs">CNPJ: {appSettings.companyCnpj} | Fone: {appSettings.companyPhone}</p>
+                   <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm font-mono text-xs">
+                     <pre className="whitespace-pre-wrap break-words">{receiptLines}</pre>
                     </div>
-
-                    <Separator className="border-dashed border-black my-3"/>
-                    
-                    <div className="text-xs text-center">
-                      <p>CUPOM NÃO FISCAL</p>
-                      <div className="flex justify-between">
-                        <span>{saleId.current}</span>
-                        <span>{saleDate.current} - {saleTime.current}</span>
-                      </div>
-                    </div>
-                    
-                     <Separator className="border-dashed border-black my-3"/>
-
-                    <div className="text-xs">
-                        <div className="grid grid-cols-12 font-bold mb-1">
-                            <div className="col-span-7">ITEM</div>
-                            <div className="col-span-2 text-center">QTD</div>
-                            <div className="col-span-3 text-right">TOTAL</div>
-                        </div>
-                         {orderItems.map((item) => (
-                            <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
-                                <div className="col-span-7 truncate">
-                                    {item.product.name}
-                                    <div className="text-gray-500 text-[10px] -mt-1">{formatCurrency(item.product.price)}/un</div>
-                                </div>
-                                <div className="col-span-2 text-center">{item.quantity}</div>
-                                <div className="col-span-3 text-right font-medium">{formatCurrency(item.product.price * item.quantity)}</div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Separator className="border-dashed border-black my-3"/>
-
-                    <div className="text-xs space-y-1">
-                        <div className="flex justify-between">
-                            <span>Subtotal</span>
-                            <span>{formatCurrency(subtotal)}</span>
-                        </div>
-                         {discountAmount > 0 && (
-                            <div className="flex justify-between text-red-600">
-                                <span>Desconto</span>
-                                <span>- {formatCurrency(discountAmount)}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between font-bold text-base">
-                            <span>TOTAL</span>
-                            <span>{formatCurrency(total)}</span>
-                        </div>
-                        <Separator className="border-dashed border-black my-1"/>
-                         <div className="flex justify-between">
-                            <span>Método de Pagamento</span>
-                            <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado` : paymentMethod}</span>
-                        </div>
-                         {paymentMethod === 'fiado' && customerNameForReceipt && (
-                             <div className="flex justify-between">
-                                <span>Cliente</span>
-                                <span>{customerNameForReceipt}</span>
-                             </div>
-                         )}
-                         <div className="flex justify-between">
-                            <span>Valor Recebido</span>
-                            <span>{formatCurrency(localAmountPaid)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Troco</span>
-                            <span>{formatCurrency(change)}</span>
-                        </div>
-                    </div>
-                     <Separator className="border-dashed border-black my-3"/>
-                      <div className="text-center text-xs space-y-2">
-                        {tax > 0 && <p>Tributos Totais Aprox. (Lei 12.741/12): {formatCurrency(tax)}</p>}
-                        <p>{appSettings.receiptMessage}</p>
-                      </div>
-                </div>
                 </div>
 
                 {/* Right side: Payment options */}
