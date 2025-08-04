@@ -48,7 +48,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   onFinalize,
   orderItems,
   subtotal,
-  // tax is passed but not used after discount feature was added
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
   const [localAmountPaid, setLocalAmountPaid] = useState(0);
@@ -258,33 +257,34 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       <DialogContent className="max-w-4xl h-[95vh] flex flex-col p-2 md:p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
         {isFinalized ? (
              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                 <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
+                 <DialogHeader>
+                    <DialogTitle className="text-center text-2xl md:text-3xl">Venda Concluída!</DialogTitle>
+                 </DialogHeader>
+                 <div className="printable-area font-mono text-xs p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-[320px] h-auto flex flex-col shadow-lg">
                     <header className="text-center space-y-1 flex-shrink-0">
-                        <p className="font-bold">{appSettings.companyName}</p>
+                        <p className="font-bold text-sm">{appSettings.companyName}</p>
                         <p className="text-[10px]">CNPJ: {appSettings.companyCnpj}</p>
                         <p className="text-[10px]">{appSettings.companyAddress}</p>
                         <p className="text-[10px]">Fone: {appSettings.companyPhone}</p>
-                        <Separator className="border-dashed border-black my-1"/>
+                        <Separator className="border-dashed border-black my-2"/>
                         <p className="text-[10px]">Documento auxiliar da nota fiscal de consumidor eletronica</p>
-                        <div className="flex justify-between text-[10px]">
+                        <div className="flex justify-between text-[10px] px-1">
                             <span>{saleDate.current}</span>
-                            <span>ID da Venda: {saleId.current}</span>
+                            <span>ID: {saleId.current}</span>
                             <span>{saleTime.current}</span>
                         </div>
-                        <Separator className="border-dashed border-black my-1"/>
-                        <p className="font-bold">CUPOM FISCAL</p>
                     </header>
-
-                    <main className="flex-1 overflow-y-auto my-2 py-1">
-                        <div className="grid grid-cols-12 font-bold">
+                    <Separator className="border-dashed border-black my-2"/>
+                    <main className="flex-1 my-1">
+                        <div className="grid grid-cols-12 font-bold px-1">
                             <div className="col-span-6">ITEM</div>
-                            <div className="col-span-3 text-center">QTD x VL.UN</div>
+                            <div className="col-span-3 text-center">QTDxVL.UN</div>
                             <div className="col-span-3 text-right">TOTAL</div>
                         </div>
                         <Separator className="border-dashed border-black my-1" />
                         
                             {orderItems.map((item) => (
-                                <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
+                                <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1 px-1">
                                     <div className="col-span-6 truncate">{item.product.name}</div>
                                     <div className="col-span-3 text-center text-[10px]">{item.quantity}x{formatPrice(item.product.price)}</div>
                                     <div className="col-span-3 text-right">{formatPrice(item.product.price * item.quantity)}</div>
@@ -294,8 +294,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                     </main>
 
                     <footer className="flex-shrink-0">
-                        <Separator className="border-dashed border-black"/>
-                         <div className="my-2 space-y-1">
+                        <Separator className="border-dashed border-black mt-2"/>
+                         <div className="my-2 space-y-1 px-1">
                             <div className="flex justify-between">
                                 <span>Qtd. de Itens</span>
                                 <span>{totalItems}</span>
@@ -304,10 +304,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                                 <span>Subtotal</span>
                                 <span>{formatCurrency(subtotal)}</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-red-500">Desconto</span>
-                                <span className="text-red-500">- {formatCurrency(discountAmount)}</span>
-                            </div>
+                            {discountAmount > 0 && (
+                                <div className="flex justify-between text-red-600">
+                                    <span>Desconto</span>
+                                    <span>- {formatCurrency(discountAmount)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between font-bold text-base">
                                 <span>TOTAL</span>
                                 <span>{formatCurrency(total)}</span>
@@ -315,7 +317,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         </div>
                         <Separator className="border-dashed border-black"/>
                         
-                        <div className="my-2 space-y-1">
+                        <div className="my-2 space-y-1 px-1">
                             <div className="flex justify-between">
                                 <span>Método Pagto.</span>
                                 <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customerNameForReceipt}` : paymentMethod}</span>
@@ -329,20 +331,19 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                                 <span>{formatCurrency(change)}</span>
                             </div>
                         </div>
-                        <Separator className="border-dashed border-black my-1"/>
+                        <Separator className="border-dashed border-black my-2"/>
                         <div className="text-center space-y-1 mt-2 text-[10px]">
-                            <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
                             <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
-                            <p className="font-bold">{appSettings.receiptMessage}</p>
+                            <p className="font-bold pt-1">{appSettings.receiptMessage}</p>
                         </div>
                     </footer>
                 </div>
 
-                <div className="absolute bottom-4 right-4 flex gap-2">
-                    <Button onClick={handlePrint} variant="outline" className="h-12 text-base">
-                        <Printer className="mr-2" /> Imprimir Recibo
+                <div className="flex gap-2 w-full max-w-[320px]">
+                    <Button onClick={handlePrint} variant="outline" className="h-12 text-base flex-1">
+                        <Printer className="mr-2" /> Imprimir
                     </Button>
-                    <Button onClick={handleNewSale} className="h-12 text-base bg-red-600 hover:bg-red-700">
+                    <Button onClick={handleNewSale} className="h-12 text-base flex-1">
                         <RotateCw className="mr-2" /> Nova Venda
                     </Button>
                 </div>
@@ -359,85 +360,84 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-hidden">
                 {/* Left side: Receipt Preview */}
                 <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
-                    <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
-                        <header className="text-center space-y-1 flex-shrink-0">
-                            <p className="font-bold">{appSettings.companyName}</p>
-                            <p className="text-[10px]">CNPJ: {appSettings.companyCnpj}</p>
-                            <p className="text-[10px]">{appSettings.companyAddress}</p>
-                            <p className="text-[10px]">Fone: {appSettings.companyPhone}</p>
-                            <Separator className="border-dashed border-black my-1"/>
-                            <p className="text-[10px]">Documento auxiliar da nota fiscal de consumidor eletronica</p>
-                            <div className="flex justify-between text-[10px]">
-                                <span>{saleDate.current}</span>
-                                <span>ID da Venda: {saleId.current}</span>
-                                <span>{saleTime.current}</span>
-                            </div>
-                            <Separator className="border-dashed border-black my-1"/>
-                            <p className="font-bold">CUPOM FISCAL</p>
-                        </header>
+                    <div className="printable-area font-mono text-xs p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-[320px] h-auto flex flex-col shadow-lg">
+                    <header className="text-center space-y-1 flex-shrink-0">
+                        <p className="font-bold text-sm">{appSettings.companyName}</p>
+                        <p className="text-[10px]">CNPJ: {appSettings.companyCnpj}</p>
+                        <p className="text-[10px]">{appSettings.companyAddress}</p>
+                        <p className="text-[10px]">Fone: {appSettings.companyPhone}</p>
+                        <Separator className="border-dashed border-black my-2"/>
+                        <p className="text-[10px]">Documento auxiliar da nota fiscal de consumidor eletronica</p>
+                        <div className="flex justify-between text-[10px] px-1">
+                            <span>{saleDate.current}</span>
+                            <span>ID: {saleId.current}</span>
+                            <span>{saleTime.current}</span>
+                        </div>
+                    </header>
+                    <Separator className="border-dashed border-black my-2"/>
+                    <main className="flex-1 my-1">
+                        <div className="grid grid-cols-12 font-bold px-1">
+                            <div className="col-span-6">ITEM</div>
+                            <div className="col-span-3 text-center">QTDxVL.UN</div>
+                            <div className="col-span-3 text-right">TOTAL</div>
+                        </div>
+                        <Separator className="border-dashed border-black my-1" />
+                        
+                            {orderItems.map((item) => (
+                                <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1 px-1">
+                                    <div className="col-span-6 truncate">{item.product.name}</div>
+                                    <div className="col-span-3 text-center text-[10px]">{item.quantity}x{formatPrice(item.product.price)}</div>
+                                    <div className="col-span-3 text-right">{formatPrice(item.product.price * item.quantity)}</div>
+                                </div>
+                            ))}
+                        
+                    </main>
 
-                        <main className="flex-1 overflow-y-auto my-2 py-1">
-                            <div className="grid grid-cols-12 font-bold">
-                                <div className="col-span-6">ITEM</div>
-                                <div className="col-span-3 text-center">QTD x VL.UN</div>
-                                <div className="col-span-3 text-right">TOTAL</div>
+                    <footer className="flex-shrink-0">
+                        <Separator className="border-dashed border-black mt-2"/>
+                         <div className="my-2 space-y-1 px-1">
+                            <div className="flex justify-between">
+                                <span>Qtd. de Itens</span>
+                                <span>{totalItems}</span>
                             </div>
-                            <Separator className="border-dashed border-black my-1" />
-                            
-                                {orderItems.map((item) => (
-                                    <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
-                                        <div className="col-span-6 truncate">{item.product.name}</div>
-                                        <div className="col-span-3 text-center text-[10px]">{item.quantity}x{formatPrice(item.product.price)}</div>
-                                        <div className="col-span-3 text-right">{formatPrice(item.product.price * item.quantity)}</div>
-                                    </div>
-                                ))}
-                            
-                        </main>
-
-                        <footer className="flex-shrink-0">
-                            <Separator className="border-dashed border-black"/>
-                            <div className="my-2 space-y-1">
-                                <div className="flex justify-between">
-                                    <span>Qtd. de Itens</span>
-                                    <span>{totalItems}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Subtotal</span>
-                                    <span>{formatCurrency(subtotal)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-red-500">Desconto</span>
-                                    <span className="text-red-500">- {formatCurrency(discountAmount)}</span>
-                                </div>
-                                <div className="flex justify-between font-bold text-base">
-                                    <span>TOTAL</span>
-                                    <span>{formatCurrency(total)}</span>
-                                </div>
+                            <div className="flex justify-between">
+                                <span>Subtotal</span>
+                                <span>{formatCurrency(subtotal)}</span>
                             </div>
-                            <Separator className="border-dashed border-black"/>
-                            
-                            <div className="my-2 space-y-1">
-                                <div className="flex justify-between">
-                                    <span>Método Pagto.</span>
-                                    <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customerNameForReceipt}` : paymentMethod}</span>
+                            {discountAmount > 0 && (
+                                <div className="flex justify-between text-red-600">
+                                    <span>Desconto</span>
+                                    <span>- {formatCurrency(discountAmount)}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>Valor Recebido</span>
-                                    <span>{formatCurrency(localAmountPaid)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Troco</span>
-                                    <span>{formatCurrency(change)}</span>
-                                </div>
+                            )}
+                            <div className="flex justify-between font-bold text-base">
+                                <span>TOTAL</span>
+                                <span>{formatCurrency(total)}</span>
                             </div>
-                            <Separator className="border-dashed border-black my-1"/>
-                            <div className="text-center space-y-1 mt-2 text-[10px]">
-                                <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
-                                <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
-                                <p className="font-bold">{appSettings.receiptMessage}</p>
+                        </div>
+                        <Separator className="border-dashed border-black"/>
+                        
+                        <div className="my-2 space-y-1 px-1">
+                            <div className="flex justify-between">
+                                <span>Método Pagto.</span>
+                                <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customerNameForReceipt}` : paymentMethod}</span>
                             </div>
-                        </footer>
-                    </div>
+                            <div className="flex justify-between">
+                                <span>Valor Recebido</span>
+                                <span>{formatCurrency(localAmountPaid)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Troco</span>
+                                <span>{formatCurrency(change)}</span>
+                            </div>
+                        </div>
+                        <Separator className="border-dashed border-black my-2"/>
+                        <div className="text-center space-y-1 mt-2 text-[10px]">
+                            <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
+                            <p className="font-bold pt-1">{appSettings.receiptMessage}</p>
+                        </div>
+                    </footer>
+                </div>
                 </div>
 
                 {/* Right side: Payment options */}
@@ -543,3 +543,5 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
+
+    
