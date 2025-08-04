@@ -1,5 +1,5 @@
 
-export type ThemeName = 'red' | 'green' | 'blue' | 'orange' | 'purple';
+export type ThemeName = 'red' | 'green' | 'blue' | 'orange' | 'purple' | 'yellow' | 'cyan' | 'pink' | 'zinc';
 
 export interface Theme {
   name: ThemeName;
@@ -17,6 +17,20 @@ export interface Theme {
 }
 
 export const themes: Theme[] = [
+  {
+    name: 'zinc',
+    label: 'Padrão',
+    light: {
+      primary: '222.2 47.4% 11.2%',
+      ring: '222.2 84% 4.9%',
+      'chart-1': '222.2 47.4% 11.2%',
+    },
+    dark: {
+      primary: '210 40% 98%',
+      ring: '210 40% 98%',
+      'chart-1': '210 40% 98%',
+    },
+  },
   {
     name: 'red',
     label: 'Vermelho',
@@ -87,4 +101,88 @@ export const themes: Theme[] = [
       'chart-1': '263.4 70% 50.4%',
     },
   },
+   {
+    name: 'yellow',
+    label: 'Amarelo',
+    light: {
+      primary: '47.9 95.8% 53.1%',
+      ring: '47.9 95.8% 53.1%',
+      'chart-1': '47.9 95.8% 53.1%',
+    },
+    dark: {
+      primary: '47.9 91.2% 59.8%',
+      ring: '47.9 91.2% 59.8%',
+      'chart-1': '47.9 91.2% 59.8%',
+    },
+  },
+   {
+    name: 'cyan',
+    label: 'Ciano',
+    light: {
+      primary: '180 82.4% 42.9%',
+      ring: '180 82.4% 42.9%',
+      'chart-1': '180 82.4% 42.9%',
+    },
+    dark: {
+      primary: '180 75.3% 50.4%',
+      ring: '180 75.3% 50.4%',
+      'chart-1': '180 75.3% 50.4%',
+    },
+  },
+   {
+    name: 'pink',
+    label: 'Rosa',
+    light: {
+      primary: '322.4 82.9% 55.1%',
+      ring: '322.4 82.9% 55.1%',
+      'chart-1': '322.4 82.9% 55.1%',
+    },
+    dark: {
+      primary: '322.4 70% 50.4%',
+      ring: '322.4 70% 50.4%',
+      'chart-1': '322.4 70% 50.4%',
+    },
+  },
 ];
+
+export type BackgroundName = 'default' | 'white' | 'stone';
+
+export interface BackgroundTheme {
+    name: BackgroundName;
+    label: string;
+    light: {
+        background: string;
+        card: string;
+        popover: string;
+    };
+}
+
+export const backgroundThemes: BackgroundTheme[] = [
+    {
+        name: 'default',
+        label: 'Padrão',
+        light: {
+            background: '210 40% 96.1%',
+            card: '0 0% 100%',
+            popover: '0 0% 100%',
+        }
+    },
+    {
+        name: 'white',
+        label: 'Branco',
+        light: {
+            background: '0 0% 100%',
+            card: '0 0% 100%',
+            popover: '0 0% 100%',
+        }
+    },
+    {
+        name: 'stone',
+        label: 'Stone',
+        light: {
+            background: '240 5.2% 95.3%', // stone-50
+            card: '0 0% 100%',
+            popover: '0 0% 100%',
+        }
+    }
+]

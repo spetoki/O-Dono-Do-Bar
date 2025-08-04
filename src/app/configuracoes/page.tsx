@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { X, Check, Save, Paintbrush, Building, ShoppingCart, Sun, Moon } from 'lucide-react';
-import { themes } from '@/lib/themes';
+import { themes, backgroundThemes } from '@/lib/themes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,9 +15,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const { theme, setTheme, mode, setMode } = useTheme();
+  const { theme, setTheme, mode, setMode, background, setBackground } = useTheme();
   const { toast } = useToast();
 
   // State for all settings
@@ -73,7 +74,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">
                   Escolha entre o tema claro ou escuro para a interface.
                 </p>
-                 <ToggleGroup type="single" value={mode} onValueChange={(value) => setMode(value as 'light' | 'dark')} className="pt-2">
+                 <ToggleGroup type="single" value={mode} onValueChange={(value) => value && setMode(value as 'light' | 'dark')} className="pt-2">
                     <ToggleGroupItem value="light" aria-label="Tema Claro" className="flex items-center gap-2">
                         <Sun className="h-4 w-4" />
                         Claro
@@ -87,12 +88,33 @@ export default function SettingsPage() {
 
               <Separator />
 
+              {mode === 'light' && (
+                <>
+                <div className="space-y-2">
+                    <h3 className="text-lg font-semibold">Cor do Fundo (Modo Claro)</h3>
+                     <p className="text-sm text-muted-foreground">
+                        Altere o tom de fundo da aplicação para uma melhor visualização.
+                    </p>
+                    <ToggleGroup type="single" value={background.name} onValueChange={(value) => value && setBackground(value as any)} className="pt-2 grid grid-cols-3 gap-2">
+                        {backgroundThemes.map((bg) => (
+                             <ToggleGroupItem key={bg.name} value={bg.name} aria-label={`Fundo ${bg.label}`} className={cn("flex items-center justify-center gap-2 py-6 flex-col", background.name === bg.name && "border-2 border-primary")}>
+                                <div className="w-6 h-6 rounded-full" style={{backgroundColor: `hsl(${bg.light.background})`, border: '1px solid hsl(var(--border))' }}></div>
+                                {bg.label}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                </div>
+                <Separator />
+                </>
+              )}
+
+
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Cor do Tema</h3>
+                <h3 className="text-lg font-semibold">Cor de Destaque</h3>
                 <p className="text-sm text-muted-foreground">
-                  Escolha uma cor principal para os destaques do sistema.
+                  Escolha uma cor principal para os botões e destaques do sistema.
                 </p>
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4 pt-2">
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-4 pt-2">
                   {themes.map((item) => (
                     <button
                       key={item.name}
@@ -103,12 +125,12 @@ export default function SettingsPage() {
                       <div
                         className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200"
                         style={{
-                          backgroundColor: `hsl(${item.light.primary})`,
-                          borderColor: theme.name === item.name ? `hsl(${item.light.primary})` : 'hsl(var(--border))'
+                          backgroundColor: `hsl(${mode === 'dark' ? item.dark.primary : item.light.primary})`,
+                          borderColor: theme.name === item.name ? `hsl(${mode === 'dark' ? item.dark.primary : item.light.primary})` : 'hsl(var(--border))'
                         }}
                       >
                         {theme.name === item.name && (
-                          <Check className="h-6 w-6 text-primary-foreground" style={{ color: 'hsl(var(--primary-foreground))' }} />
+                          <Check className="h-6 w-6 text-primary-foreground" style={{ color: `hsl(${mode === 'dark' ? 'var(--primary-foreground)' : 'var(--primary-foreground)'})` }} />
                         )}
                       </div>
                       <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">
