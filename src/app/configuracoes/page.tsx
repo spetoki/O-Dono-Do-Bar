@@ -30,6 +30,7 @@ export default function SettingsPage() {
                   key={item.name}
                   onClick={() => setTheme(item.name)}
                   className="flex flex-col items-center justify-center gap-2 group"
+                  aria-label={`Select ${item.label} theme`}
                 >
                   <div
                     className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200"
@@ -39,7 +40,7 @@ export default function SettingsPage() {
                     }}
                   >
                     {theme.name === item.name && (
-                      <Check className="h-6 w-6 text-primary-foreground" />
+                      <Check className="h-6 w-6 text-primary-foreground" style={{color: 'hsl(var(--primary-foreground))'}} />
                     )}
                   </div>
                   <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">

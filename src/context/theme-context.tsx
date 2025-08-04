@@ -30,17 +30,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.classList.remove(...themes.map(t => t.name));
       document.documentElement.classList.add(theme.name);
       localStorage.setItem('app-theme', theme.name);
-
-      // Apply light theme colors
-      Object.entries(theme.light).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(`--${key}`, value);
-      });
-      
-      // Apply dark theme colors
-      Object.entries(theme.dark).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(`--dark-${key}`, value);
-      });
-
     }
   }, [theme, isMounted]);
 
