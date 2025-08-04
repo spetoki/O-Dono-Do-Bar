@@ -311,12 +311,12 @@ export default function NewProductPage() {
                     <FormItem>
                         <FormLabel>Categoria</FormLabel>
                         <FormControl>
-                            <>
+                            <div>
                                 <Input list="category-list" placeholder="Ex: Bebidas" {...field} />
                                 <datalist id="category-list">
                                     {uniqueCategories.map(cat => <option key={cat} value={cat} />)}
                                 </datalist>
-                            </>
+                            </div>
                         </FormControl>
                         <FormMessage />
                     </FormItem>
