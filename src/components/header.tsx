@@ -85,9 +85,9 @@ const Header: FC = () => {
         <ShoppingCart className="h-8 w-8" />
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight">
-            YZIDRO - PDV
+            O Dono Do Bar
           </h1>
-          <p className="text-xs">SISTEMAS ERP</p>
+          <p className="text-xs">Gerenciamento para Bares</p>
         </div>
       </Link>
       

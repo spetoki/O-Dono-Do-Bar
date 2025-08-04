@@ -4,8 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'PDV - Distribuidora de Bebidas',
-  description: 'Sistema de ponto de venda para sua distribuidora.',
+  title: 'O Dono Do Bar - PDV',
+  description: 'Sistema de ponto de venda para seu bar.',
 };
 
 export default function RootLayout({
