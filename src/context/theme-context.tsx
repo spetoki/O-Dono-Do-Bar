@@ -48,24 +48,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (isMounted) {
       const doc = document.documentElement;
       
-      // Handle theme color class
+      // Handle theme color class for highlights
       doc.classList.remove(...themes.map(t => t.name));
       doc.classList.add(theme.name);
       localStorage.setItem('app-theme', theme.name);
       
-      // Handle dark/light mode class
+      // Handle dark/light mode class and background colors
       if (mode === 'dark') {
         doc.classList.add('dark');
-        // Reset light mode custom properties to use CSS variables from globals.css
-        doc.style.removeProperty('--background');
-        doc.style.removeProperty('--card');
-        doc.style.removeProperty('--popover');
+        // Set CSS variables for dark mode explicitly
+        // These values are from the .dark definition in globals.css
+        doc.style.setProperty('--background', '222.2 84% 4.9%');
+        doc.style.setProperty('--card', '222.2 84% 4.9%');
+        doc.style.setProperty('--popover', '222.2 84% 4.9%');
       } else {
         doc.classList.remove('dark');
         // Apply light-mode background variables
         doc.style.setProperty('--background', `hsl(${background.light.background})`);
-        doc.style.setProperty('--card', `hsl(${background.light.card})`);
-        doc.style.setProperty('--popover', `hsl(${background.light.popover})`);
+        // Always set card and popover to white in light mode
+        doc.style.setProperty('--card', 'hsl(0 0% 100%)');
+        doc.style.setProperty('--popover', 'hsl(0 0% 100%)');
       }
       localStorage.setItem('app-mode', mode);
       localStorage.setItem('app-background', background.name);
