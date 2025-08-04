@@ -41,11 +41,7 @@ const Home: FC = () => {
       }
       return [{ product, quantity: qty }, ...prevItems];
     });
-     toast({
-      title: "Produto Adicionado",
-      description: `${product.name} foi adicionado ao seu pedido.`,
-    });
-  }, [toast]);
+  }, []);
   
   const handleScan = (barcode: string) => {
     const product = allProducts.find(p => p.id.toString() === barcode);
