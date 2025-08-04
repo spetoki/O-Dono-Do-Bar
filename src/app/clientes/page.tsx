@@ -1,8 +1,10 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { customers } from '@/data/customers';
+import { customers as initialCustomers } from '@/data/customers';
+import type { Customer } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Table,
@@ -23,6 +25,17 @@ const formatCurrency = (amount: number) =>
   }).format(amount);
 
 export default function CustomersPage() {
+  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+
+  useEffect(() => {
+    // Carrega clientes do localStorage e mescla com os clientes iniciais
+    const storedCustomers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
+    const allCustomerIds = new Set(initialCustomers.map(c => c.id));
+    const uniqueStoredCustomers = storedCustomers.filter(c => !allCustomerIds.has(c.id));
+    
+    setCustomers([...initialCustomers, ...uniqueStoredCustomers].sort((a,b) => a.name.localeCompare(b.name)));
+  }, []);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

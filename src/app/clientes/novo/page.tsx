@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
 import { Save, X } from 'lucide-react';
+import type { Customer } from '@/types';
+import { customers as initialCustomers } from '@/data/customers';
 
 const customerSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -50,8 +52,32 @@ export default function NewCustomerPage() {
       });
     }
 
-    if (state.isSuccess) {
-        // Atrasamos um pouco o redirecionamento para o toast ser visível
+    if (state.isSuccess && state.customerData) {
+        // Lógica para salvar no localStorage
+        const existingCustomers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
+        const newCustomer: Customer = {
+            ...state.customerData,
+            id: new Date().getTime(), // ID único baseado no tempo
+            debt: 0,
+        };
+        const allCustomers = [...initialCustomers, ...existingCustomers];
+        const isDuplicate = allCustomers.some(c => c.cpf === newCustomer.cpf);
+
+        if (isDuplicate) {
+             toast({
+                title: 'Erro!',
+                description: 'CPF já cadastrado.',
+                variant: 'destructive',
+            });
+            // Reset state to allow new submissions
+            state.isSuccess = false; 
+            return;
+        }
+
+        const updatedCustomers = [...existingCustomers, newCustomer];
+        localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+
+
         const timer = setTimeout(() => {
              router.push('/clientes');
         }, 1000);
