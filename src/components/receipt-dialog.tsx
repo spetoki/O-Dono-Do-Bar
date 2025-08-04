@@ -333,7 +333,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         </div>
                         <Separator className="border-dashed border-black my-2"/>
                         <div className="text-center space-y-1 mt-2 text-[10px]">
-                            <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
                             <p className="font-bold pt-1">{appSettings.receiptMessage}</p>
                         </div>
                     </footer>
@@ -432,8 +431,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                             </div>
                         </div>
                         <Separator className="border-dashed border-black my-2"/>
-                        <div className="text-center space-y-1 mt-2 text-[10px]">
-                            <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
+                         <div className="text-center space-y-1 mt-2 text-[10px]">
                             <p className="font-bold pt-1">{appSettings.receiptMessage}</p>
                         </div>
                     </footer>
