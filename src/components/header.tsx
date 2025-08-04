@@ -36,7 +36,7 @@ const Header: FC = () => {
     },
     {
       href: '/vendas',
-      label: 'Vendas',
+      label: 'Histórico de Vendas',
       icon: LineChart,
       active: pathname === '/vendas',
     },

@@ -85,7 +85,7 @@ export default function SalesPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Relatório de Vendas</CardTitle>
+            <CardTitle>Histórico de Vendas</CardTitle>
             <CardDescription>Analise o desempenho de suas vendas.</CardDescription>
           </div>
           <Link href="/">
