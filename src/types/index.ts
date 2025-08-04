@@ -34,3 +34,11 @@ export interface Customer {
   phone: string;
   debt: number;
 }
+
+export interface User {
+  id: number;
+  name: string;
+  username: string;
+  password?: string; // Should be hashed in a real app
+  role: 'admin' | 'caixa';
+}

@@ -3,6 +3,8 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/context/theme-context';
+import { AuthProvider } from '@/context/auth-context';
+
 
 export const metadata: Metadata = {
   title: 'O Dono Do Bar - PDV',
@@ -23,8 +25,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <ThemeProvider>
+          <AuthProvider>
             {children}
             <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

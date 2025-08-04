@@ -4,7 +4,7 @@
 import type { FC } from 'react';
 import { useState, useMemo, useCallback, useEffect, ChangeEvent } from 'react';
 import type { OrderItem, Product } from '@/types';
-import { products as allProducts } from '@/data/products';
+import { products as initialProducts } from '@/data/products';
 import Header from '@/components/header';
 import OrderSummary from '@/components/order-summary';
 import ProductRecommender from '@/components/product-recommender';
@@ -16,7 +16,9 @@ import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import ReceiptDialog from '@/components/receipt-dialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
-
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const HomePage: FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -27,16 +29,28 @@ const HomePage: FC = () => {
   const [amountPaid, setAmountPaid] = useState(0);
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>(allProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const isMobile = useIsMobile();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
 
   useEffect(() => {
     // Load products from localStorage and merge with initial products
     const storedProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
-    const allProductIds = new Set(allProducts.map(p => p.id));
+    const allProductIds = new Set(initialProducts.map(p => p.id));
     const uniqueStoredProducts = storedProducts.filter(p => !allProductIds.has(p.id));
 
-    setProducts([...allProducts, ...uniqueStoredProducts]);
+    setProducts([...initialProducts, ...uniqueStoredProducts]);
+    setLoadingProducts(false);
   }, []);
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
@@ -179,6 +193,35 @@ const HomePage: FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderItems, total, isReceiptOpen, isCatalogOpen, isScannerOpen]);
 
+  if (loading || !user || loadingProducts) {
+    return (
+       <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
+        <Header />
+         <main className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-4">
+           <Skeleton className="h-12 w-full" />
+           <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                 <Skeleton className="h-full w-full rounded-lg" />
+              </div>
+              <div className="lg:col-span-1 flex flex-col gap-4">
+                 <Skeleton className="h-10 w-full" />
+                 <Skeleton className="flex-1 rounded-lg min-h-[250px]" />
+                 <div className="grid grid-cols-3 gap-2">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                 </div>
+                 <div className="flex gap-2">
+                    <Skeleton className="h-14 w-full" />
+                    <Skeleton className="h-14 w-full" />
+                 </div>
+              </div>
+           </div>
+         </main>
+      </div>
+    )
+  }
+
 
   return (
     <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
@@ -187,6 +230,7 @@ const HomePage: FC = () => {
         <main className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-4">
           <div className='flex justify-between items-center bg-primary text-primary-foreground p-2 rounded-md'>
             <h2 className="font-headline text-lg md:text-xl font-bold">CAIXA ABERTO</h2>
+            {user && <span className='text-sm font-medium'>Operador: {user.name}</span>}
           </div>
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
              {/* Left Column */}

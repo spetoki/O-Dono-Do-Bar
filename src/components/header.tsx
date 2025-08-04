@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X, Cog } from 'lucide-react';
+import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X, Cog, LogOut, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -11,16 +11,27 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetClose,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 import { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/context/auth-context';
 
 
 const Header: FC = () => {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [isSheetOpen, setSheetOpen] = useState(false);
+  const { user, logout } = useAuth();
+
 
   const managementLinks = [
      {
@@ -110,10 +121,58 @@ const Header: FC = () => {
                 <h2 className="text-lg font-semibold text-secondary-foreground">Menu</h2>
              </div>
              <NavLinks isMobile />
+              {user && (
+                <>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="outline" className="w-full justify-start gap-2">
+                         <UserCircle />
+                         <div className='text-left'>
+                           <p className='text-sm font-bold'>{user.name}</p>
+                           <p className='text-xs capitalize'>{user.role}</p>
+                         </div>
+                       </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 mb-2">
+                      <DropdownMenuItem onClick={logout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sair</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  </div>
+                </>
+              )}
           </SheetContent>
         </Sheet>
       ) : (
-       <NavLinks />
+      <div className='flex items-center gap-2'>
+        <NavLinks />
+        {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon" className="rounded-full">
+                    <UserCircle />
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className='flex flex-col items-start gap-1'>
+                    <p className='font-bold'>{user.name}</p>
+                    <p className='text-muted-foreground capitalize'>{user.role}</p>
+                </DropdownMenuItem>
+                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+      </div>
       )}
     </header>
   );
