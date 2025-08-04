@@ -117,15 +117,6 @@ export default function CloseoutPage() {
   };
   
   const handleFinalizeCloseout = () => {
-     if (!isAdmin) {
-      toast({
-        title: 'Acesso Negado',
-        description: 'Apenas administradores podem finalizar o fechamento do dia.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
     // In a real app, you would save this to a backend database.
     // For this demo, we'll archive sales in localStorage.
     const now = new Date();
@@ -376,7 +367,7 @@ export default function CloseoutPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout}>Finalizar e Arquivar Caixa</Button>
+                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout} >Finalizar e Arquivar Caixa</Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
