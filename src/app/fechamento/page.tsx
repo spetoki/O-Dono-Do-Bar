@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { salesData, type Sale } from '@/data/sales';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -229,6 +229,12 @@ export default function CloseoutPage() {
                                     </TableRow>
                                 ))}
                             </TableBody>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-right font-bold text-base">Total do Dia</TableCell>
+                                    <TableCell className="text-right font-bold font-mono text-base">{formatCurrency(totalRevenue)}</TableCell>
+                                </TableRow>
+                            </TableFooter>
                         </Table>
                     </div>
                 </CardContent>
