@@ -145,7 +145,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             onClose();
         }
     }}>
-      <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => {
+      <DialogContent className="max-w-sm max-h-[90vh] flex flex-col" onOpenAutoFocus={(e) => {
           e.preventDefault();
           const input = document.getElementById('amount-paid');
           if (input && paymentMethod === 'dinheiro') {
@@ -153,163 +153,165 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             (input as HTMLInputElement).select();
           }
       }}>
-         <div className="printable-area font-mono text-xs p-2 bg-white text-black">
-            <header className="text-center space-y-1">
-                <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
-                <p>CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
-                <p>Rua Sarjento Jose Das Quantas, 6589, Santa felicidade - Cascavel PR</p>
-                <p>Fone 45 99969-6969 e 45 99966-9966</p>
-                <Separator className="border-dashed border-black"/>
-                <p>Documento auxiliar da nota fiscal de consumidor eletronica</p>
-                 <div className="flex justify-between">
-                    <span>{saleDate.current}</span>
-                    <span>ID da Venda: {saleId.current}</span>
-                    <span>{saleTime.current}</span>
-                </div>
-                 <Separator className="border-dashed border-black"/>
-                <p className="font-bold">CUPOM FISCAL</p>
-            </header>
-
-            <main>
-                <div className="grid grid-cols-12 my-2 font-bold">
-                    <div className="col-span-6">ITEM</div>
-                    <div className="col-span-3 text-center">QTD x VL.UN</div>
-                    <div className="col-span-3 text-right">TOTAL</div>
-                </div>
-                <Separator className="border-dashed border-black" />
-                <ScrollArea className="max-h-32 my-1">
-                     {orderItems.map((item) => (
-                        <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
-                            <div className="col-span-6 truncate">{item.product.name}</div>
-                            <div className="col-span-3 text-center">{item.quantity} x {formatPrice(item.product.price)}</div>
-                            <div className="col-span-3 text-right">{formatPrice(item.product.price * item.quantity)}</div>
-                        </div>
-                     ))}
-                </ScrollArea>
-                <Separator className="border-dashed border-black"/>
-
-                <div className="my-2 space-y-1">
+        <ScrollArea className="flex-1 pr-4">
+            <div className="printable-area font-mono text-xs p-2 bg-white text-black">
+                <header className="text-center space-y-1">
+                    <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
+                    <p>CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
+                    <p>Rua Sarjento Jose Das Quantas, 6589, Santa felicidade - Cascavel PR</p>
+                    <p>Fone 45 99969-6969 e 45 99966-9966</p>
+                    <Separator className="border-dashed border-black"/>
+                    <p>Documento auxiliar da nota fiscal de consumidor eletronica</p>
                     <div className="flex justify-between">
-                        <span>Qtd. de Itens</span>
-                        <span>{totalItems}</span>
+                        <span>{saleDate.current}</span>
+                        <span>ID da Venda: {saleId.current}</span>
+                        <span>{saleTime.current}</span>
                     </div>
-                     <div className="flex justify-between">
-                        <span>Subtotal</span>
-                        <span>{formatCurrency(subtotal)}</span>
-                    </div>
-                     <div className="flex justify-between">
-                        <span>Desconto</span>
-                        <span>- {formatCurrency(0)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-base">
-                        <span>TOTAL</span>
-                        <span>{formatCurrency(total)}</span>
-                    </div>
-                </div>
-                 <Separator className="border-dashed border-black"/>
-                
-                <div className="my-2 space-y-1">
-                     <div className="flex justify-between">
-                        <span>Método Pagto.</span>
-                        <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customers.find(c => c.id.toString() === selectedCustomer)?.name || 'N/A'}` : paymentMethod}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Valor Recebido</span>
-                        <span>{formatCurrency(amountPaid)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Troco</span>
-                        <span>{formatCurrency(change)}</span>
-                    </div>
-                </div>
+                    <Separator className="border-dashed border-black"/>
+                    <p className="font-bold">CUPOM FISCAL</p>
+                </header>
 
-            </main>
-
-            <footer className="text-center space-y-1 mt-2">
-                 <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
-                 <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
-                 <div className="space-y-0">
-                    <p>Obrigado pela preferência!</p>
-                    <p>Volte sempre!</p>
-                 </div>
-            </footer>
-        </div>
-
-        {paymentMethod !== 'fiado' && (
-          <div className="space-y-2">
-              <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
-              <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-          </div>
-        )}
-        
-        <Separator />
-        
-         <div>
-            <Label className="text-sm font-medium">Forma de Pagamento</Label>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {(['dinheiro', 'cartao', 'pix', 'fiado'] as PaymentMethod[]).map(method => (
-                  <Button 
-                    key={method}
-                    variant={paymentMethod === method ? 'default' : 'outline'}
-                    onClick={() => setPaymentMethod(method)}
-                    className="flex-1"
-                  >
-                    {method === 'dinheiro' && <DollarSign />}
-                    {method === 'cartao' && <CreditCard />}
-                    {method === 'pix' && <Landmark />}
-                    {method === 'fiado' && <ClipboardList />}
-                    <span className="capitalize ml-2">{method}</span>
-                  </Button>
-              ))}
-            </div>
-        </div>
-
-        {paymentMethod === 'dinheiro' && (
-            <div className="space-y-2 animate-fade-in">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="amount-paid">Valor Pago</Label>
-                      <Input 
-                        id="amount-paid" 
-                        value={amountPaidDisplay} 
-                        onChange={handleAmountChange} 
-                        className="text-right font-mono text-lg h-12" 
-                        placeholder="0,00"
-                      />
+                <main>
+                    <div className="grid grid-cols-12 my-2 font-bold">
+                        <div className="col-span-6">ITEM</div>
+                        <div className="col-span-3 text-center">QTD x VL.UN</div>
+                        <div className="col-span-3 text-right">TOTAL</div>
                     </div>
-                    <div className="space-y-2">
-                       <Label htmlFor="change">Troco</Label>
-                       <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
-                    </div>
-                  </div>
-              </div>
-        )}
-        {paymentMethod === 'fiado' && (
-          <div className="space-y-2 animate-fade-in">
-            <Label htmlFor="customer-select">Selecionar Cliente</Label>
-            <div className="flex gap-2">
-                <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
-                    <SelectTrigger id="customer-select" className="flex-1">
-                        <SelectValue placeholder="Escolha um cliente..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {customers.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id.toString()}>
-                                {customer.name} - {customer.cpf}
-                            </SelectItem>
+                    <Separator className="border-dashed border-black" />
+                    <div className="max-h-32 my-1 overflow-y-auto">
+                        {orderItems.map((item) => (
+                            <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
+                                <div className="col-span-6 truncate">{item.product.name}</div>
+                                <div className="col-span-3 text-center">{item.quantity} x {formatPrice(item.product.price)}</div>
+                                <div className="col-span-3 text-right">{formatPrice(item.product.price * item.quantity)}</div>
+                            </div>
                         ))}
-                    </SelectContent>
-                </Select>
-                 <Button variant="outline" size="icon">
-                    <UserPlus className="h-4 w-4"/>
-                    <span className="sr-only">Adicionar Cliente</span>
-                </Button>
+                    </div>
+                    <Separator className="border-dashed border-black"/>
+
+                    <div className="my-2 space-y-1">
+                        <div className="flex justify-between">
+                            <span>Qtd. de Itens</span>
+                            <span>{totalItems}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Subtotal</span>
+                            <span>{formatCurrency(subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Desconto</span>
+                            <span>- {formatCurrency(0)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-base">
+                            <span>TOTAL</span>
+                            <span>{formatCurrency(total)}</span>
+                        </div>
+                    </div>
+                    <Separator className="border-dashed border-black"/>
+                    
+                    <div className="my-2 space-y-1">
+                        <div className="flex justify-between">
+                            <span>Método Pagto.</span>
+                            <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customers.find(c => c.id.toString() === selectedCustomer)?.name || 'N/A'}` : paymentMethod}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Valor Recebido</span>
+                            <span>{formatCurrency(amountPaid)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Troco</span>
+                            <span>{formatCurrency(change)}</span>
+                        </div>
+                    </div>
+
+                </main>
+
+                <footer className="text-center space-y-1 mt-2">
+                    <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
+                    <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
+                    <div className="space-y-0">
+                        <p>Obrigado pela preferência!</p>
+                        <p>Volte sempre!</p>
+                    </div>
+                </footer>
             </div>
-          </div>
-        )}
+
+            {paymentMethod !== 'fiado' && (
+            <div className="space-y-2 mt-4">
+                <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
+                <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+            </div>
+            )}
+            
+            <Separator className="my-4"/>
+            
+            <div>
+                <Label className="text-sm font-medium">Forma de Pagamento</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                {(['dinheiro', 'cartao', 'pix', 'fiado'] as PaymentMethod[]).map(method => (
+                    <Button 
+                        key={method}
+                        variant={paymentMethod === method ? 'default' : 'outline'}
+                        onClick={() => setPaymentMethod(method)}
+                        className="flex-1"
+                    >
+                        {method === 'dinheiro' && <DollarSign />}
+                        {method === 'cartao' && <CreditCard />}
+                        {method === 'pix' && <Landmark />}
+                        {method === 'fiado' && <ClipboardList />}
+                        <span className="capitalize ml-2">{method}</span>
+                    </Button>
+                ))}
+                </div>
+            </div>
+
+            {paymentMethod === 'dinheiro' && (
+                <div className="space-y-2 animate-fade-in mt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                        <Label htmlFor="amount-paid">Valor Pago</Label>
+                        <Input 
+                            id="amount-paid" 
+                            value={amountPaidDisplay} 
+                            onChange={handleAmountChange} 
+                            className="text-right font-mono text-lg h-12" 
+                            placeholder="0,00"
+                        />
+                        </div>
+                        <div className="space-y-2">
+                        <Label htmlFor="change">Troco</Label>
+                        <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
+                        </div>
+                    </div>
+                </div>
+            )}
+            {paymentMethod === 'fiado' && (
+            <div className="space-y-2 animate-fade-in mt-4">
+                <Label htmlFor="customer-select">Selecionar Cliente</Label>
+                <div className="flex gap-2">
+                    <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
+                        <SelectTrigger id="customer-select" className="flex-1">
+                            <SelectValue placeholder="Escolha um cliente..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {customers.map((customer) => (
+                                <SelectItem key={customer.id} value={customer.id.toString()}>
+                                    {customer.name} - {customer.cpf}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="icon">
+                        <UserPlus className="h-4 w-4"/>
+                        <span className="sr-only">Adicionar Cliente</span>
+                    </Button>
+                </div>
+            </div>
+            )}
+        </ScrollArea>
         
 
-        <DialogFooter className="grid grid-cols-3 gap-2 mt-4">
+        <DialogFooter className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
               <XCircle className="mr-2" /> Fechar
             </Button>
