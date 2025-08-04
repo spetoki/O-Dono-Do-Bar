@@ -13,6 +13,7 @@ const customerSchema = z.object({
 export interface FormState {
   message: string;
   isError: boolean;
+  isSuccess: boolean;
 }
 
 export async function createCustomer(
@@ -31,6 +32,7 @@ export async function createCustomer(
     return {
       message: "Dados inválidos. Por favor, corrija os erros e tente novamente.",
       isError: true,
+      isSuccess: false,
     };
   }
 
@@ -42,5 +44,10 @@ export async function createCustomer(
   // Em caso de erro ao salvar, você retornaria uma mensagem de erro.
   // ex: return { message: 'Não foi possível salvar o cliente.', isError: true };
 
-  redirect('/clientes');
+  // Em vez de redirecionar aqui, retornamos um estado de sucesso.
+  return {
+    message: 'Cliente cadastrado com sucesso!',
+    isError: false,
+    isSuccess: true,
+  };
 }

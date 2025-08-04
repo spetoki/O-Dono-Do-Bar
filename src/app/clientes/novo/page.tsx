@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { createCustomer, type FormState } from '@/app/clientes/actions';
+import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,8 +27,9 @@ type CustomerFormValues = z.infer<typeof customerSchema>;
 
 export default function NewCustomerPage() {
   const { toast } = useToast();
+  const router = useRouter();
 
-  const initialState: FormState = { message: '', isError: false };
+  const initialState: FormState = { message: '', isError: false, isSuccess: false };
   const [state, dispatch] = useFormState(createCustomer, initialState);
 
   const form = useForm<CustomerFormValues>({
@@ -47,7 +49,16 @@ export default function NewCustomerPage() {
         variant: state.isError ? 'destructive' : 'default',
       });
     }
-  }, [state, toast]);
+
+    if (state.isSuccess) {
+        // Atrasamos um pouco o redirecionamento para o toast ser visível
+        const timer = setTimeout(() => {
+             router.push('/clientes');
+        }, 1000);
+        return () => clearTimeout(timer);
+    }
+
+  }, [state, toast, router]);
   
   const onSubmit = form.handleSubmit(async (data) => {
     const formData = new FormData();
