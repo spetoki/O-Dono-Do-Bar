@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import { createProduct, type FormState } from '@/app/cadastro/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
-import { Save, X, Percent } from 'lucide-react';
+import { Save, X, Percent, Upload } from 'lucide-react';
 import { products as initialProducts } from '@/data/products';
 import type { Product } from '@/types';
 
@@ -28,6 +29,7 @@ const productSchema = z.object({
   stock: z.coerce.number().int().min(0, { message: 'O estoque não pode ser negativo.' }),
   category: z.string().min(3, { message: 'A categoria deve ter pelo menos 3 caracteres.' }),
   description: z.string().optional(),
+  image: z.any().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -35,6 +37,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 export default function NewProductPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const initialState: FormState = { message: '', isError: false, isSuccess: false };
   const [state, dispatch] = useFormState(createProduct, initialState);
@@ -55,10 +58,24 @@ export default function NewProductPage() {
   const costPrice = form.watch('costPrice');
   const profitMargin = form.watch('profitMargin');
   const price = form.watch('price');
+  const imageFile = form.watch('image');
+
+  useEffect(() => {
+    if (imageFile && imageFile.length > 0) {
+      const file = imageFile[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
+  }, [imageFile]);
+
 
   // Calculate price when cost or margin changes
   useEffect(() => {
-    // Only update if the price is not being actively edited
     if (form.getFieldState('price').isDirty) return;
 
     const cost = parseFloat(String(costPrice)) || 0;
@@ -73,7 +90,6 @@ export default function NewProductPage() {
 
   // Calculate margin when price or cost changes
   useEffect(() => {
-    // Only update if the margin is not being actively edited
      if (form.getFieldState('profitMargin').isDirty && !form.getFieldState('price').isDirty) return;
 
     const cost = parseFloat(String(costPrice)) || 0;
@@ -87,7 +103,7 @@ export default function NewProductPage() {
   }, [price, costPrice, form]);
 
   useEffect(() => {
-    if (state.message) {
+    if (state.message && !state.isSuccess) { // Only show toast on error or initial message
       toast({
         title: state.isError ? 'Erro!' : 'Sucesso!',
         description: state.message,
@@ -96,28 +112,55 @@ export default function NewProductPage() {
     }
 
     if (state.isSuccess) {
-        // Logic to save to local storage
-        const currentProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
-        const newProduct: Product = {
-            ...form.getValues(),
-            id: new Date().getTime(),
-            imageUrl: 'https://placehold.co/200x200',
-            dataAiHint: 'product',
-        };
-        const updatedProducts = [...currentProducts, newProduct];
-        localStorage.setItem('products', JSON.stringify(updatedProducts));
+        // Logic to save to local storage handled by the action
+        toast({
+            title: 'Sucesso!',
+            description: state.message,
+            variant: 'default',
+        });
         
         const timer = setTimeout(() => {
             router.push('/estoque');
         }, 1000);
         return () => clearTimeout(timer);
     }
-  }, [state, toast, router, form]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, toast, router]);
+  
+  const fileRef = form.register('image');
 
-  const onSubmit = (data: ProductFormValues) => {
+  const onSubmit = async (data: ProductFormValues) => {
     const formData = new FormData();
+    
+    // Handle file upload
+    if (data.image && data.image.length > 0) {
+        const file = data.image[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const base64Image = reader.result as string;
+            formData.append('imageUrl', base64Image);
+            
+            // Append other data and dispatch
+            appendOtherDataAndDispatch(formData, data);
+        };
+        reader.onerror = (error) => {
+            console.error("Error converting image to base64:", error);
+            toast({
+                title: 'Erro de Imagem',
+                description: 'Não foi possível processar a imagem. Tente novamente.',
+                variant: 'destructive',
+            });
+        };
+    } else {
+        // No image, just append other data and dispatch
+        appendOtherDataAndDispatch(formData, data);
+    }
+  };
+
+  const appendOtherDataAndDispatch = (formData: FormData, data: ProductFormValues) => {
     Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined) {
+        if (key !== 'image' && value !== undefined) {
              formData.append(key, String(value));
         }
     });
@@ -136,19 +179,59 @@ export default function NewProductPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome do Produto</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Cerveja Skol 350ml" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2 space-y-4">
+                     <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome do Produto</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Cerveja Skol 350ml" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descrição (Opcional)</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Descreva o produto..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col items-center justify-center space-y-2">
+                             <FormLabel htmlFor="picture" className="cursor-pointer border-2 border-dashed border-muted-foreground/50 rounded-lg p-4 w-full flex flex-col items-center justify-center text-center hover:bg-muted/50 aspect-square">
+                                {imagePreview ? (
+                                    <Image src={imagePreview} alt="Preview" width={150} height={150} className="rounded-md object-contain h-full w-full" />
+                                ) : (
+                                    <>
+                                        <Upload className="h-12 w-12 text-muted-foreground" />
+                                        <span className="text-muted-foreground mt-2">Carregar Imagem</span>
+                                    </>
+                                )}
+                             </FormLabel>
+                             <FormControl>
+                                <Input type="file" id="picture" accept="image/*" className="sr-only" {...fileRef} />
+                            </FormControl>
+                             <FormMessage />
+                        </FormItem>
+                    )}
+                 />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control}
@@ -228,19 +311,6 @@ export default function NewProductPage() {
                 />
               </div>
               
-               <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descrição (Opcional)</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Descreva o produto..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <div className="flex justify-end gap-2 pt-4">
                 <Link href="/estoque" passHref>
                   <Button variant="outline" type="button">
