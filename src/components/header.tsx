@@ -26,7 +26,6 @@ const Header: FC = () => {
       label: 'Cadastrar Itens',
       icon: PackagePlus,
       active: pathname === '/cadastro',
-      onClick: () => handleComingSoon('Cadastrar Itens'),
     },
     {
       href: '/estoque',
