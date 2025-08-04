@@ -16,7 +16,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { customers as initialCustomers } from '@/data/customers';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw, ShoppingCart } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw } from 'lucide-react';
 import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
@@ -138,12 +138,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentMethod, total]);
 
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(amount);
     
   const formatPrice = (price: number) => {
     return price.toFixed(2).replace('.', ',');
@@ -226,77 +220,89 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
            setDiscountValue(value);
        }
   }
+  
+  const pad = (str: string | number, length: number, char = ' ') => String(str).padStart(length, char);
+  const padEnd = (str: string | number, length: number, char = ' ') => String(str).padEnd(length, char);
+  const formatCurrency = (val: number) => val.toFixed(2).replace('.', ',');
+
 
   const ReceiptContent = () => (
-    <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm mx-auto">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-bold">{appSettings.companyName}</h3>
-          <p className="text-xs">{appSettings.companyAddress}</p>
-          <p className="text-xs">CNPJ: {appSettings.companyCnpj}</p>
-          <p className="text-xs">Tel: {appSettings.companyPhone}</p>
+    <div className="printable-area bg-white text-black p-4 font-mono text-xs w-full max-w-[300px] mx-auto">
+        <div className="text-center">
+            <p className="font-bold">{appSettings.companyName}</p>
+            <p>CNPJ: {appSettings.companyCnpj}</p>
+            <p>{appSettings.companyAddress}</p>
+            <p>Tel: {appSettings.companyPhone}</p>
+            {appSettings.companyInstagram && <p>Instagram: {appSettings.companyInstagram}</p>}
         </div>
-        <div className="border-t border-b border-dashed border-black my-2 py-1 text-xs">
-          <div className="flex justify-between">
+        <p className="border-t border-b border-dashed border-black my-1 py-0.5">
+            Documento Auxiliar de Venda
+        </p>
+        <div className="flex justify-between">
             <span>{saleDate.current} {saleTime.current}</span>
             <span>Cupom: {saleId.current}</span>
-          </div>
-          <p>Operador: {user?.name}</p>
-          {cpf && <p>CPF: {cpf}</p>}
         </div>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-dashed border-black">
-              <th className="text-left font-normal py-1">Produto</th>
-              <th className="text-right font-normal py-1">Qtd</th>
-              <th className="text-right font-normal py-1">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderItems.map((item) => (
-              <tr key={item.product.id}>
-                <td className="py-0.5">{item.product.name}</td>
-                <td className="text-right py-0.5">{item.quantity}</td>
-                <td className="text-right py-0.5">{formatCurrency(item.product.price * item.quantity)}</td>
-              </tr>
+        <p>Vendedor: {user?.name}</p>
+        {cpf && <p>CPF: {cpf}</p>}
+        <div className="border-t border-dashed border-black mt-1 pt-1">
+            <div className="flex font-bold">
+                <span className="w-[10%]">ITEM</span>
+                <span className="w-[40%]">DESC</span>
+                <span className="w-[25%] text-right">QTDxVL.UN</span>
+                <span className="w-[25%] text-right">TOTAL</span>
+            </div>
+            {orderItems.map((item, index) => (
+                <div key={item.product.id} className="flex">
+                    <span className="w-[10%]">{pad(index + 1, 3, '0')}</span>
+                    <span className="w-[40%] truncate">{item.product.name}</span>
+                    <span className="w-[25%] text-right">{item.quantity}x{formatCurrency(item.product.price)}</span>
+                    <span className="w-[25%] text-right">{formatCurrency(item.product.price * item.quantity)}</span>
+                </div>
             ))}
-          </tbody>
-        </table>
-        <div className="border-t border-dashed border-black mt-2 pt-2 text-xs space-y-1">
-          <div className="flex justify-between">
-            <span>SUBTOTAL</span>
-            <span>{formatCurrency(subtotal)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>DESCONTO</span>
-            <span>- {formatCurrency(discountAmount)}</span>
-          </div>
-          <div className="flex justify-between font-bold text-sm">
-            <span>TOTAL</span>
-            <span>{formatCurrency(total)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>PAGAMENTO</span>
-            <span className="uppercase">{paymentMethod}</span>
-          </div>
-          {paymentMethod === 'dinheiro' && (
-            <>
-              <div className="flex justify-between">
-                <span>VALOR PAGO</span>
-                <span>{formatCurrency(localAmountPaid)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>TROCO</span>
-                <span>{formatCurrency(change)}</span>
-              </div>
-            </>
-          )}
         </div>
-        <div className="border-t border-dashed border-black mt-2 pt-2 text-center text-xs">
-          <p>Tributos aprox.: {formatCurrency(tax)} (Lei 12.741/12)</p>
-          <p className="mt-2">{appSettings.receiptMessage}</p>
+        <div className="border-t border-dashed border-black mt-1 pt-1">
+            <div className="flex justify-between">
+                <span>Qtd. de Itens</span>
+                <span>{orderItems.reduce((acc, item) => acc + item.quantity, 0)}</span>
+            </div>
+             <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>R$ {formatCurrency(subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+                <span>Desconto</span>
+                <span>R$ {formatCurrency(discountAmount)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-sm">
+                <span>TOTAL</span>
+                <span>R$ {formatCurrency(total)}</span>
+            </div>
         </div>
-      </div>
-  )
+         <div className="border-t border-dashed border-black mt-1 pt-1">
+            <div className="flex justify-between">
+                <span>Forma Pagto.</span>
+                <span className="uppercase">{paymentMethod}</span>
+            </div>
+            {paymentMethod === 'dinheiro' && (
+                <>
+                <div className="flex justify-between">
+                    <span>Valor Recebido</span>
+                    <span>R$ {formatCurrency(localAmountPaid)}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Troco</span>
+                    <span>R$ {formatCurrency(change)}</span>
+                </div>
+                </>
+            )}
+        </div>
+        <div className="border-t border-dashed border-black mt-1 pt-1 text-center">
+           <p>Tributos aprox. R$ {formatCurrency(tax)} (Lei 12.741/12)</p>
+           <p className="mt-2">{appSettings.receiptMessage}</p>
+        </div>
+    </div>
+);
+
 
   if (!isOpen) return null;
 
@@ -310,9 +316,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         {isFinalized ? (
              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                 <DialogHeader className="items-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary mb-4 text-primary-foreground">
-                        <ShoppingCart className="h-8 w-8" />
-                    </div>
                     <DialogTitle className="text-3xl font-bold">Venda Concluída!</DialogTitle>
                 </DialogHeader>
                 
@@ -417,7 +420,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                                 </div>
                                 <div className="space-y-2">
                                 <Label htmlFor="change">Troco</Label>
-                                <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-xl sm:text-2xl h-14 bg-muted" />
+                                <Input id="change" value={`R$ ${formatCurrency(change)}`} readOnly className="text-right font-mono text-xl sm:text-2xl h-14 bg-muted" />
                                 </div>
                             </div>
                         </div>

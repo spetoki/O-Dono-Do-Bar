@@ -29,7 +29,7 @@ export default function SettingsPage() {
     companyPhone: '',
     companyInstagram: '',
     taxRate: '0.00',
-    receiptMessage: 'Obrigado pela preferência! Volte sempre!',
+    receiptMessage: 'Obrigado pela preferência!\nVolte sempre! 🍻',
   });
 
   // Load settings from localStorage on component mount
