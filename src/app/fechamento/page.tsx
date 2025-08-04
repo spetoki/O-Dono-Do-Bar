@@ -376,7 +376,7 @@ export default function CloseoutPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout} disabled={!isAdmin}>Finalizar e Arquivar Caixa</Button>
+                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout}>Finalizar e Arquivar Caixa</Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
@@ -410,7 +410,5 @@ export default function CloseoutPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
-    
