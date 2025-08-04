@@ -51,14 +51,14 @@ export default function NewCustomerPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <form action={dispatch}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Adicionar Novo Cliente</CardTitle>
-            <CardDescription>Preencha os dados abaixo para cadastrar um novo cliente.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Form {...form}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Adicionar Novo Cliente</CardTitle>
+          <CardDescription>Preencha os dados abaixo para cadastrar um novo cliente.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form action={dispatch} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -100,7 +100,7 @@ export default function NewCustomerPage() {
               />
               <div className="flex justify-end gap-2 pt-4">
                 <Link href="/clientes">
-                  <Button variant="outline">
+                  <Button variant="outline" type="button">
                     <X className="mr-2 h-4 w-4" />
                     Cancelar
                   </Button>
@@ -110,10 +110,10 @@ export default function NewCustomerPage() {
                   Salvar Cliente
                 </Button>
               </div>
-            </Form>
-          </CardContent>
-        </Card>
-      </form>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
