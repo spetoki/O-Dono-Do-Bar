@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { users as initialUsers } from '@/data/users';
 import type { User } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -15,11 +16,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { X, UserPlus, Shield, Badge } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { X, UserPlus, Shield, Badge, Pencil } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
+
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     // In a real app, you would fetch this from your backend.
@@ -35,6 +39,11 @@ export default function UsersPage() {
     // Combine and sort users by name
     setUsers([...initialUsers, ...uniqueStoredUsers].sort((a,b) => a.name.localeCompare(b.name)));
   }, []);
+  
+  const handleEdit = (userId: number) => {
+    router.push(`/funcionarios/editar/${userId}`);
+  };
+
 
   return (
     <Card>
@@ -66,26 +75,26 @@ export default function UsersPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Usuário</TableHead>
                 <TableHead>Função</TableHead>
-                {/* Add actions column in the future if needed */}
-                {/* <TableHead className="text-right">Ações</TableHead> */}
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.username}</TableCell>
+              {users.map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell className="font-medium">{u.name}</TableCell>
+                  <TableCell>{u.username}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                        {user.role === 'admin' ? <Shield className="h-4 w-4 text-primary" /> : <Badge className="h-4 w-4 text-muted-foreground" />}
-                        <span className="capitalize">{user.role}</span>
+                        {u.role === 'admin' ? <Shield className="h-4 w-4 text-primary" /> : <Badge className="h-4 w-4 text-muted-foreground" />}
+                        <span className="capitalize">{u.role}</span>
                     </div>
                   </TableCell>
-                  {/* <TableCell className="text-right">
-                     <Button variant="ghost" size="icon">
+                  <TableCell className="text-right">
+                     <Button variant="ghost" size="icon" onClick={() => handleEdit(u.id)} disabled={user?.id === u.id}>
                         <Pencil className="h-4 w-4" />
+                         <span className="sr-only">Editar</span>
                      </Button>
-                  </TableCell> */}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
