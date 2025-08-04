@@ -87,7 +87,7 @@ const Header: FC = () => {
           <h1 className="text-lg md:text-xl font-bold tracking-tight">
             O Dono Do Bar
           </h1>
-          <p className="text-xs">Gerenciamento para Bares</p>
+          <p className="text-xs">Tudo no controle. Até o fiado.</p>
         </div>
       </Link>
       
