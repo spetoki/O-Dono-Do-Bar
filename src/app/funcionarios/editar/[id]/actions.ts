@@ -16,6 +16,12 @@ export interface FormState {
   message: string;
   isError: boolean;
   isSuccess: boolean;
+  errors?: {
+    name?: string[];
+    username?: string[];
+    password?: string[];
+    role?: string[];
+  };
   userData?: z.infer<typeof userSchema>;
 }
 
@@ -38,6 +44,7 @@ export async function updateUser(
             message: "Dados inválidos. Por favor, corrija os erros e tente novamente.",
             isError: true,
             isSuccess: false,
+            errors: validatedFields.error.flatten().fieldErrors,
         };
     }
     

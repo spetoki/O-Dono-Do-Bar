@@ -69,12 +69,25 @@ export default function EditUserPage() {
 
 
   useEffect(() => {
-    if (state.message && !state.isSuccess) { 
-      toast({
-        title: state.isError ? 'Erro!' : 'Aviso',
-        description: state.message,
-        variant: state.isError ? 'destructive' : 'default',
-      });
+    if (!state) return;
+
+    if (state.isError && state.message) {
+      if (state.errors) {
+        Object.entries(state.errors).forEach(([key, value]) => {
+          if (value) {
+            form.setError(key as keyof UserFormValues, {
+              type: 'manual',
+              message: value.join(', '),
+            });
+          }
+        });
+      } else {
+         toast({
+          title: 'Erro!',
+          description: state.message,
+          variant: 'destructive',
+        });
+      }
     }
 
     if (state.isSuccess && state.userData) {
