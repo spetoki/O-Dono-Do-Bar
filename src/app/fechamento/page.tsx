@@ -126,8 +126,7 @@ export default function CloseoutPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isAdmin && (
-            <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
@@ -138,38 +137,41 @@ export default function CloseoutPage() {
                       <p className="text-xs text-muted-foreground">{todaysSales.length} vendas hoje</p>
                   </CardContent>
               </Card>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Vendas em Dinheiro</CardTitle>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-                  </CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(expectedCash)}</div>
-                      <p className="text-xs text-muted-foreground">Total esperado no caixa</p>
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Cartão / Pix</CardTitle>
-                      <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(expectedCardPix)}</div>
-                      <p className="text-xs text-muted-foreground">Pagamentos eletrônicos</p>
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Vendas Fiado</CardTitle>
-                      <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(expectedFiado)}</div>
-                      <p className="text-xs text-muted-foreground">Total pendente de clientes</p>
-                  </CardContent>
-              </Card>
-            </div>
-          )}
+            {isAdmin && (
+              <>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Vendas em Dinheiro</CardTitle>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(expectedCash)}</div>
+                        <p className="text-xs text-muted-foreground">Total esperado no caixa</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Cartão / Pix</CardTitle>
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(expectedCardPix)}</div>
+                        <p className="text-xs text-muted-foreground">Pagamentos eletrônicos</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Vendas Fiado</CardTitle>
+                        <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(expectedFiado)}</div>
+                        <p className="text-xs text-muted-foreground">Total pendente de clientes</p>
+                    </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
           
           <Card>
             <CardHeader>
@@ -316,4 +318,5 @@ export default function CloseoutPage() {
       </Card>
     </div>
   )
-}
+
+    
