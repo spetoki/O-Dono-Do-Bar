@@ -52,19 +52,21 @@ export default function CloseoutPage() {
   const [countedCash, setCountedCash] = useState('');
   const [countedCardPix, setCountedCardPix] = useState('');
   const [countedFiado, setCountedFiado] = useState('');
-  const [allSales, setAllSales] = useState<Sale[]>(initialSalesData);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
-
-  useEffect(() => {
+  const [allSales, setAllSales] = useState<Sale[]>(() => {
+    if (typeof window === 'undefined') {
+        return initialSalesData;
+    }
     const storedSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
     const initialSalesIds = new Set(initialSalesData.map(s => s.id));
     const uniqueStoredSales = storedSales.filter(s => !initialSalesIds.has(s.id));
 
     const combinedSales = [...initialSalesData, ...uniqueStoredSales];
-    setAllSales(combinedSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-  }, []);
+    return combinedSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  });
+
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
 
   // Memoized sales data for today
@@ -366,5 +368,3 @@ export default function CloseoutPage() {
     </div>
   )
 }
-
-    
