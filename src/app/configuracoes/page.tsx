@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { X, Check, Save, Paintbrush, Building, ShoppingCart, Sun, Moon } from 'lucide-react';
-import { themes, backgroundThemes } from '@/lib/themes';
+import { themes } from '@/lib/themes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const { theme, setTheme, mode, setMode, background, setBackground } = useTheme();
+  const { theme, setTheme, mode, setMode } = useTheme();
   const { toast } = useToast();
 
   // State for all settings
@@ -87,27 +87,6 @@ export default function SettingsPage() {
               </div>
 
               <Separator />
-
-              {mode === 'light' && (
-                <>
-                <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">Cor do Fundo (Modo Claro)</h3>
-                     <p className="text-sm text-muted-foreground">
-                        Altere o tom de fundo da aplicação para uma melhor visualização.
-                    </p>
-                    <ToggleGroup type="single" value={background.name} onValueChange={(value) => value && setBackground(value as any)} className="pt-2 grid grid-cols-3 gap-2">
-                        {backgroundThemes.map((bg) => (
-                             <ToggleGroupItem key={bg.name} value={bg.name} aria-label={`Fundo ${bg.label}`} className={cn("flex items-center justify-center gap-2 py-6 flex-col", background.name === bg.name && "border-2 border-primary")}>
-                                <div className="w-6 h-6 rounded-full" style={{backgroundColor: `hsl(${bg.light.background})`, border: '1px solid hsl(var(--border))' }}></div>
-                                {bg.label}
-                            </ToggleGroupItem>
-                        ))}
-                    </ToggleGroup>
-                </div>
-                <Separator />
-                </>
-              )}
-
 
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Cor de Destaque</h3>
