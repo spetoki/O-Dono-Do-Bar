@@ -54,21 +54,37 @@ export default function NewProductPage() {
 
   const costPrice = form.watch('costPrice');
   const profitMargin = form.watch('profitMargin');
+  const price = form.watch('price');
 
+  // Calculate price when cost or margin changes
   useEffect(() => {
-    const calculatePrice = () => {
-      const cost = parseFloat(String(costPrice)) || 0;
-      const margin = parseFloat(String(profitMargin)) || 0;
-      if (cost > 0) {
-        const finalPrice = cost * (1 + margin / 100);
-        form.setValue('price', parseFloat(finalPrice.toFixed(2)));
-      } else {
-        form.setValue('price', 0);
-      }
-    };
-    calculatePrice();
+    // Only update if the price is not being actively edited
+    if (form.getFieldState('price').isDirty) return;
+
+    const cost = parseFloat(String(costPrice)) || 0;
+    const margin = parseFloat(String(profitMargin)) || 0;
+    if (cost > 0) {
+      const finalPrice = cost * (1 + margin / 100);
+      form.setValue('price', parseFloat(finalPrice.toFixed(2)));
+    } else {
+      form.setValue('price', 0);
+    }
   }, [costPrice, profitMargin, form]);
 
+  // Calculate margin when price or cost changes
+  useEffect(() => {
+    // Only update if the margin is not being actively edited
+     if (form.getFieldState('profitMargin').isDirty && !form.getFieldState('price').isDirty) return;
+
+    const cost = parseFloat(String(costPrice)) || 0;
+    const finalPrice = parseFloat(String(price)) || 0;
+    if (cost > 0 && finalPrice > cost) {
+      const margin = ((finalPrice / cost) - 1) * 100;
+      form.setValue('profitMargin', parseFloat(margin.toFixed(2)));
+    } else {
+      form.setValue('profitMargin', 0);
+    }
+  }, [price, costPrice, form]);
 
   useEffect(() => {
     if (state.message) {
@@ -170,7 +186,7 @@ export default function NewProductPage() {
                   <FormItem>
                       <FormLabel>Preço de Venda (R$)</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" {...field} readOnly className="bg-muted/50" />
+                        <Input type="number" step="0.01" {...field} />
                       </FormControl>
                       <FormMessage />
                   </FormItem>
