@@ -61,11 +61,11 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [discountValue, setDiscountValue] = useState('');
 
   const [appSettings, setAppSettings] = useState({
-    companyName: 'DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE',
-    companyCnpj: '45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA',
-    companyAddress: 'Rua Sarjento Jose Das Quantas, 6589, Santa felicidade - Cascavel PR',
-    companyPhone: 'Fone 45 99969-6969 e 45 99966-9966',
-    taxRate: '8.00',
+    companyName: 'O Dono Do Bar',
+    companyCnpj: '00.000.000/0001-00',
+    companyAddress: 'Rua da Cerveja, 123 - Cascavel, PR',
+    companyPhone: '(45) 99999-8888',
+    taxRate: '0.00',
     receiptMessage: 'Obrigado pela preferência!',
   });
 

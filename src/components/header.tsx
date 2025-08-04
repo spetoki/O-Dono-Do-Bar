@@ -66,7 +66,7 @@ const Header: FC = () => {
             );
             
             const buttonProps = {
-                variant: active ? 'default' : 'secondary',
+                variant: active ? 'default' : ('secondary' as any),
                 className: cn(
                   active && 'bg-primary-foreground/90 text-primary hover:bg-primary-foreground', 
                   isMobile && "w-full justify-start text-lg p-6"

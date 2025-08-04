@@ -44,7 +44,7 @@ export default function NewCustomerPage() {
   });
 
   useEffect(() => {
-    if (state.message) {
+    if (state.message && !state.isSuccess) {
       toast({
         title: state.isError ? 'Erro!' : 'Sucesso!',
         description: state.message,
