@@ -1,4 +1,3 @@
-
 'use client';
 
 import { type FC, useState, useEffect, useMemo, ChangeEvent, useRef } from 'react';
@@ -16,7 +15,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { customers as initialCustomers } from '@/data/customers';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw, ShoppingCart } from 'lucide-react';
 import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
@@ -33,11 +32,6 @@ interface ReceiptDialogProps {
   onFinalize: () => void;
   orderItems: OrderItem[];
   subtotal: number;
-  tax: number;
-  total: number;
-  onAmountPaidChange: (amount: number) => void;
-  amountPaid: number;
-  change: number;
 }
 
 const ReceiptDialog: FC<ReceiptDialogProps> = ({
@@ -53,7 +47,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [cpf, setCpf] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const isMobile = useIsMobile();
   const { user } = useAuth();
   const [isFinalized, setIsFinalized] = useState(false);
 
@@ -221,46 +214,45 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
        }
   }
   
-  const pad = (str: string | number, length: number, char = ' ') => String(str).padStart(length, char);
   const padEnd = (str: string | number, length: number, char = ' ') => String(str).padEnd(length, char);
+  const padStart = (str: string | number, length: number, char = ' ') => String(str).padStart(length, char);
   const formatCurrency = (val: number) => val.toFixed(2).replace('.', ',');
 
 
   const ReceiptContent = () => (
-    <div className="printable-area bg-white text-black p-4 font-mono text-xs w-full max-w-[300px] mx-auto">
+    <div className="printable-area bg-white text-black p-4 font-mono text-xs w-full max-w-[320px] mx-auto border shadow-sm">
         <div className="text-center">
-            <p className="font-bold">{appSettings.companyName}</p>
+            <h2 className="text-sm font-bold">{appSettings.companyName}</h2>
             <p>CNPJ: {appSettings.companyCnpj}</p>
             <p>{appSettings.companyAddress}</p>
-            <p>Tel: {appSettings.companyPhone}</p>
-            {appSettings.companyInstagram && <p>Instagram: {appSettings.companyInstagram}</p>}
+            <p>Fone: {appSettings.companyPhone} | Instagram: {appSettings.companyInstagram}</p>
         </div>
-        <p className="border-t border-b border-dashed border-black my-1 py-0.5">
-            Documento Auxiliar de Venda
+        <p className="border-t border-b border-dashed border-black my-1 py-0.5 text-center">
+            Documento auxiliar da nota fiscal de consumidor eletronica
         </p>
         <div className="flex justify-between">
-            <span>{saleDate.current} {saleTime.current}</span>
-            <span>Cupom: {saleId.current}</span>
+            <span>{saleDate.current}</span>
+            <span>ID da Venda: {saleId.current}</span>
+            <span>{saleTime.current}</span>
         </div>
-        <p>Vendedor: {user?.name}</p>
-        {cpf && <p>CPF: {cpf}</p>}
-        <div className="border-t border-dashed border-black mt-1 pt-1">
-            <div className="flex font-bold">
-                <span className="w-[10%]">ITEM</span>
-                <span className="w-[40%]">DESC</span>
-                <span className="w-[25%] text-right">QTDxVL.UN</span>
-                <span className="w-[25%] text-right">TOTAL</span>
-            </div>
-            {orderItems.map((item, index) => (
+        <p className="border-t border-b border-dashed border-black my-1 py-0.5 text-center font-bold">
+            CUPOM FISCAL
+        </p>
+        <div className="flex font-bold">
+            <span className={padEnd("ITEM", 18)}>ITEM</span>
+            <span className={padEnd("QTD x VL.UN", 15)}>QTD x VL.UN</span>
+            <span className={padStart("TOTAL", 8)}>TOTAL</span>
+        </div>
+        <div className="border-b border-dashed border-black pb-1">
+            {orderItems.map((item) => (
                 <div key={item.product.id} className="flex">
-                    <span className="w-[10%]">{pad(index + 1, 3, '0')}</span>
-                    <span className="w-[40%] truncate">{item.product.name}</span>
-                    <span className="w-[25%] text-right">{item.quantity}x{formatCurrency(item.product.price)}</span>
-                    <span className="w-[25%] text-right">{formatCurrency(item.product.price * item.quantity)}</span>
+                    <span className={padEnd(item.product.name.substring(0,17), 18)}>{item.product.name.substring(0,17)}</span>
+                    <span className={padEnd(`${item.quantity} x ${formatCurrency(item.product.price)}`, 15)}>{item.quantity} x {formatCurrency(item.product.price)}</span>
+                    <span className={padStart(formatCurrency(item.product.price * item.quantity), 8)}>{formatCurrency(item.product.price * item.quantity)}</span>
                 </div>
             ))}
         </div>
-        <div className="border-t border-dashed border-black mt-1 pt-1">
+        <div className="mt-1 space-y-1">
             <div className="flex justify-between">
                 <span>Qtd. de Itens</span>
                 <span>{orderItems.reduce((acc, item) => acc + item.quantity, 0)}</span>
@@ -269,18 +261,18 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                 <span>Subtotal</span>
                 <span>R$ {formatCurrency(subtotal)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-red-600">
                 <span>Desconto</span>
-                <span>R$ {formatCurrency(discountAmount)}</span>
+                <span>- R$ {formatCurrency(discountAmount)}</span>
             </div>
-            <div className="flex justify-between font-bold text-sm">
+            <div className="flex justify-between font-bold text-sm border-t border-dashed border-black pt-1">
                 <span>TOTAL</span>
                 <span>R$ {formatCurrency(total)}</span>
             </div>
         </div>
-         <div className="border-t border-dashed border-black mt-1 pt-1">
+         <div className="mt-2 space-y-1">
             <div className="flex justify-between">
-                <span>Forma Pagto.</span>
+                <span>Método Pagto.</span>
                 <span className="uppercase">{paymentMethod}</span>
             </div>
             {paymentMethod === 'dinheiro' && (
@@ -296,9 +288,10 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                 </>
             )}
         </div>
-        <div className="border-t border-dashed border-black mt-1 pt-1 text-center">
-           <p>Tributos aprox. R$ {formatCurrency(tax)} (Lei 12.741/12)</p>
-           <p className="mt-2">{appSettings.receiptMessage}</p>
+        <div className="border-t border-dashed border-black mt-2 pt-1 text-center text-[10px]">
+           <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
+           <p>Tributos totais aproximados conforme Lei Federal 12.741/12: R$ {formatCurrency(tax)}</p>
+           <p className="font-bold mt-2">{appSettings.receiptMessage}</p>
         </div>
     </div>
 );
@@ -316,7 +309,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         {isFinalized ? (
              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
                 <DialogHeader className="items-center">
-                    <DialogTitle className="text-3xl font-bold">Venda Concluída!</DialogTitle>
+                    <DialogTitle className="text-3xl font-bold text-red-600">Venda Concluída!</DialogTitle>
+                    <DialogDescription>O recibo foi gerado abaixo.</DialogDescription>
                 </DialogHeader>
                 
                 <ReceiptContent />
@@ -325,7 +319,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                     <Button onClick={handlePrint} variant="outline" className="h-12 text-base flex-1">
                         <Printer className="mr-2" /> Imprimir Recibo
                     </Button>
-                    <Button onClick={handleNewSale} className="h-12 text-base flex-1">
+                    <Button onClick={handleNewSale} className="h-12 text-base flex-1 bg-red-600 hover:bg-red-700">
                         <RotateCw className="mr-2" /> Nova Venda
                     </Button>
                 </div>
@@ -429,15 +423,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
             </div>
             
-            <DialogFooter className="grid grid-cols-3 gap-2 pt-4 border-t flex-shrink-0">
+            <DialogFooter className="grid grid-cols-2 gap-2 pt-4 border-t flex-shrink-0">
                 <Button variant="outline" onClick={onClose} className="h-12 md:h-14 text-sm md:text-lg">
-                <XCircle className="mr-2" /> {isMobile ? "Fechar" : "Fechar"}
+                    <XCircle className="mr-2" /> Fechar
                 </Button>
-                <Button variant="outline" onClick={handlePrint} className="h-12 md:h-14 text-sm md:text-lg">
-                <Printer className="mr-2" /> {isMobile ? "Imprimir" : "Imprimir"}
-                </Button>
-                <Button onClick={handleFinalize} className="h-12 md:h-14 text-sm md:text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
-                    <CheckCircle className="mr-2" /> {isMobile ? "Finalizar" : "Finalizar Venda"}
+                <Button onClick={handleFinalize} className="h-12 md:h-14 text-sm md:text-lg bg-red-600 hover:bg-red-700" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
+                    <CheckCircle className="mr-2" /> Finalizar Venda
                 </Button>
             </DialogFooter>
         </>

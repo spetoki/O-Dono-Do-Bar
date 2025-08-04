@@ -18,12 +18,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
+import ReceiptDialog from '@/components/receipt-dialog';
+
 
 const HomePage: FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [initialCategory, setInitialCategory] = useState('Todos');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [amountPaid, setAmountPaid] = useState(0);
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const { toast } = useToast();
@@ -112,13 +115,6 @@ const HomePage: FC = () => {
     );
   }, [orderItems]);
 
-  // This is a mock calculation. The final tax is calculated in the receipt dialog based on settings.
-  const total = useMemo(() => subtotal, [subtotal]);
-  
-  const change = useMemo(() => {
-    return amountPaid > total ? amountPaid - total : 0;
-  }, [amountPaid, total]);
-
   const openCatalog = (category: string = 'Todos') => {
     setInitialCategory(category);
     setIsCatalogOpen(true);
@@ -142,31 +138,8 @@ const HomePage: FC = () => {
         })
         return;
     }
-
-    const saleId = String(Math.floor(Math.random() * 900000) + 100000);
-
-    const newSale: Sale = {
-        id: saleId,
-        date: new Date().toISOString(),
-        items: orderItems,
-        subtotal: subtotal,
-        tax: 0, // Tax is no longer calculated here
-        total: total,
-        paymentMethod: 'dinheiro', // Default or could be dynamic
-        operatorId: user.id,
-        operatorName: user.name,
-    };
-
-    const existingSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
-    const updatedSales = [...existingSales, newSale];
-    localStorage.setItem('sales', JSON.stringify(updatedSales));
-
-    toast({
-        title: "Venda Finalizada!",
-        description: `Venda #${saleId} concluída com sucesso.`,
-    })
-
-    clearOrder();
+    
+    setIsReceiptOpen(true);
   };
   
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -187,12 +160,17 @@ const HomePage: FC = () => {
       style: 'currency',
       currency: 'BRL',
     }).format(amount);
+  
+  const total = useMemo(() => subtotal, [subtotal]);
+  const change = useMemo(() => {
+    return amountPaid > total ? amountPaid - total : 0;
+  }, [amountPaid, total]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Shortcuts for POS main page
-      if (isCatalogOpen || isScannerOpen) return;
+      if (isCatalogOpen || isScannerOpen || isReceiptOpen) return;
 
       if (e.key.toLowerCase() === 'f7') {
         e.preventDefault();
@@ -216,7 +194,7 @@ const HomePage: FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderItems, total, isCatalogOpen, isScannerOpen]);
+  }, [orderItems, total, isCatalogOpen, isScannerOpen, isReceiptOpen]);
 
   if (loading || !user || loadingProducts) {
     return (
@@ -329,6 +307,16 @@ const HomePage: FC = () => {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScan}
+      />
+      <ReceiptDialog
+        isOpen={isReceiptOpen}
+        onClose={() => setIsReceiptOpen(false)}
+        onFinalize={() => {
+            setIsReceiptOpen(false);
+            clearOrder();
+        }}
+        orderItems={orderItems}
+        subtotal={subtotal}
       />
     </div>
   );
