@@ -4,10 +4,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { salesData, type Sale } from '@/data/sales';
+import { salesData } from '@/data/sales';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { X, Printer, Calculator, Scale, CreditCard, ClipboardList } from 'lucide-react';
+import { X, Printer, Calculator, CreditCard, ClipboardList } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -26,62 +26,61 @@ const formatDate = (date: Date) => {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    }).format(date)
+    }).format(date);
 }
 
 export default function CloseoutPage() {
+  // State for user-entered counted values
   const [countedCash, setCountedCash] = useState('');
   const [countedCardPix, setCountedCardPix] = useState('');
   const [countedFiado, setCountedFiado] = useState('');
   
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
+  // Memoized sales data for today
   const todaysSales = useMemo(() => {
     const now = new Date();
     return salesData.filter(sale => new Date(sale.date).toDateString() === now.toDateString());
   }, []);
 
-  const totalsByPaymentMethod = useMemo(() => {
-    return todaysSales.reduce((acc, sale) => {
-      const key = sale.paymentMethod;
-      if (key === 'cartao' || key === 'pix') {
-          acc['cartao_pix'] = (acc['cartao_pix'] || 0) + sale.total;
-      } else {
-          acc[key] = (acc[key] || 0) + sale.total;
+  // Memoized expected totals based on system records
+  const { expectedCash, expectedCardPix, expectedFiado, totalRevenue } = useMemo(() => {
+    const totals = todaysSales.reduce((acc, sale) => {
+      if (sale.paymentMethod === 'dinheiro') {
+        acc.cash += sale.total;
+      } else if (sale.paymentMethod === 'cartao' || sale.paymentMethod === 'pix') {
+        acc.cardPix += sale.total;
+      } else if (sale.paymentMethod === 'fiado') {
+        acc.fiado += sale.total;
       }
       return acc;
-    }, {} as Record<string, number>);
+    }, { cash: 0, cardPix: 0, fiado: 0 });
+
+    const totalRevenue = totals.cash + totals.cardPix + totals.fiado;
+    return { expectedCash: totals.cash, expectedCardPix: totals.cardPix, expectedFiado: totals.fiado, totalRevenue };
   }, [todaysSales]);
 
-  const totalRevenue = useMemo(() => todaysSales.reduce((acc, sale) => acc + sale.total, 0), [todaysSales]);
+  // Memoized differences, only calculated for admins
+  const { cashDifference, cardPixDifference, fiadoDifference } = useMemo(() => {
+    if (!isAdmin) return { cashDifference: 0, cardPixDifference: 0, fiadoDifference: 0 };
+    
+    const parseInput = (value: string) => parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
 
-  const expectedCash = useMemo(() => totalsByPaymentMethod['dinheiro'] || 0, [totalsByPaymentMethod]);
-  const expectedCardPix = useMemo(() => totalsByPaymentMethod['cartao_pix'] || 0, [totalsByPaymentMethod]);
-  const expectedFiado = useMemo(() => totalsByPaymentMethod['fiado'] || 0, [totalsByPaymentMethod]);
-  
-  const cashDifference = useMemo(() => {
-      const counted = parseFloat(countedCash.replace(',', '.')) || 0;
-      if (counted === 0 && expectedCash > 0 && countedCash.trim() === '') return 0;
-      return counted - expectedCash;
-  }, [countedCash, expectedCash]);
+    const countedCashNum = parseInput(countedCash);
+    const countedCardPixNum = parseInput(countedCardPix);
+    const countedFiadoNum = parseInput(countedFiado);
 
-  const cardPixDifference = useMemo(() => {
-    const counted = parseFloat(countedCardPix.replace(',', '.')) || 0;
-    if (counted === 0 && expectedCardPix > 0 && countedCardPix.trim() === '') return 0;
-    return counted - expectedCardPix;
-  }, [countedCardPix, expectedCardPix]);
-
-  const fiadoDifference = useMemo(() => {
-    const counted = parseFloat(countedFiado.replace(',', '.')) || 0;
-    if (counted === 0 && expectedFiado > 0 && countedFiado.trim() === '') return 0;
-    return counted - expectedFiado;
-  }, [countedFiado, expectedFiado]);
+    return {
+      cashDifference: countedCashNum - expectedCash,
+      cardPixDifference: countedCardPixNum - expectedCardPix,
+      fiadoDifference: countedFiadoNum - expectedFiado,
+    };
+  }, [isAdmin, countedCash, countedCardPix, countedFiado, expectedCash, expectedCardPix, expectedFiado]);
 
   const handlePrint = () => {
     window.print();
   };
-  
-  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="space-y-4 printable-area">
@@ -113,10 +112,12 @@ export default function CloseoutPage() {
             <CardDescription>Relatório de vendas e conferência do caixa do dia de hoje.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" />
-                Imprimir Relatório
-            </Button>
+            {isAdmin && (
+              <Button variant="outline" onClick={handlePrint}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimir Relatório
+              </Button>
+            )}
             <Link href="/">
                 <Button variant="outline">
                 <X className="mr-2 h-4 w-4" />
@@ -126,19 +127,19 @@ export default function CloseoutPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                  </CardHeader>
-                  <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-                      <p className="text-xs text-muted-foreground">{todaysSales.length} vendas hoje</p>
-                  </CardContent>
-              </Card>
-            {isAdmin && (
-              <>
+          {/* Admin-only Summary Cards */}
+          {isAdmin && (
+            <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+                        <p className="text-xs text-muted-foreground">{todaysSales.length} vendas hoje</p>
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Vendas em Dinheiro</CardTitle>
@@ -169,14 +170,18 @@ export default function CloseoutPage() {
                         <p className="text-xs text-muted-foreground">Total pendente de clientes</p>
                     </CardContent>
                 </Card>
-              </>
-            )}
-          </div>
+            </div>
+          )}
           
           <Card>
             <CardHeader>
                 <CardTitle>Conferência de Caixa</CardTitle>
-                <CardDescription>Insira os valores totais apurados para cada forma de pagamento para conferência.</CardDescription>
+                <CardDescription>
+                  {isAdmin 
+                    ? "Insira os valores apurados para conferir com os registros do sistema."
+                    : "Insira os valores totais apurados em seu turno para cada forma de pagamento."
+                  }
+                </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Dinheiro */}
@@ -201,11 +206,12 @@ export default function CloseoutPage() {
                             <Label className="text-xs">Diferença</Label>
                             <div className={cn(
                                 "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
-                                cashDifference === 0 && "bg-muted",
+                                countedCash.trim() !== '' && cashDifference === 0 && "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 border-green-500/50",
                                 cashDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
                                 cashDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
+                                countedCash.trim() === '' && "bg-muted"
                             )}>
-                                {formatCurrency(cashDifference)}
+                                {countedCash.trim() !== '' ? formatCurrency(cashDifference) : '...'}
                             </div>
                         </div>
                     )}
@@ -233,11 +239,12 @@ export default function CloseoutPage() {
                             <Label className="text-xs">Diferença</Label>
                             <div className={cn(
                                 "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
-                                cardPixDifference === 0 && "bg-muted",
+                                countedCardPix.trim() !== '' && cardPixDifference === 0 && "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 border-green-500/50",
                                 cardPixDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
                                 cardPixDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
+                                countedCardPix.trim() === '' && "bg-muted"
                             )}>
-                                {formatCurrency(cardPixDifference)}
+                                {countedCardPix.trim() !== '' ? formatCurrency(cardPixDifference) : '...'}
                             </div>
                         </div>
                     )}
@@ -265,11 +272,12 @@ export default function CloseoutPage() {
                             <Label className="text-xs">Diferença</Label>
                             <div className={cn(
                                 "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
-                                fiadoDifference === 0 && "bg-muted",
+                                countedFiado.trim() !== '' && fiadoDifference === 0 && "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 border-green-500/50",
                                 fiadoDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
                                 fiadoDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
+                                 countedFiado.trim() === '' && "bg-muted"
                             )}>
-                                {formatCurrency(fiadoDifference)}
+                                {countedFiado.trim() !== '' ? formatCurrency(fiadoDifference) : '...'}
                             </div>
                         </div>
                     )}
@@ -277,12 +285,13 @@ export default function CloseoutPage() {
             </CardContent>
           </Card>
 
+          {/* Admin-only Sales List */}
           {isAdmin && (
             <Card className="mt-6">
                   <CardHeader>
                       <CardTitle>Vendas Realizadas Hoje</CardTitle>
                   </CardHeader>
-                  <CardContent className="h-[400px] overflow-y-auto">
+                  <CardContent className="max-h-[400px] overflow-y-auto">
                       <div className="w-full overflow-x-auto">
                           <Table>
                               <TableHeader>
@@ -318,5 +327,4 @@ export default function CloseoutPage() {
       </Card>
     </div>
   )
-
-    
+}
