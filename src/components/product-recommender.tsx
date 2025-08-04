@@ -17,12 +17,12 @@ interface ProductRecommenderProps {
 }
 
 const categories = [
-  { name: 'Bebidas', icon: <Beer className="h-10 w-10" /> },
-  { name: 'Tabacaria', icon: <Cigarette className="h-10 w-10" /> },
-  { name: 'Salgadinhos', icon: <Cookie className="h-10 w-10" /> },
-  { name: 'Doces', icon: <Sparkles className="h-10 w-10" /> },
-  { name: 'Diversos', icon: <ShoppingBasket className="h-10 w-10" /> },
-  { name: 'Outros', icon: <Sprout className="h-10 w-10" /> },
+  { name: 'Bebidas', icon: <Beer className="h-12 w-12" /> },
+  { name: 'Tabacaria', icon: <Cigarette className="h-12 w-12" /> },
+  { name: 'Salgadinhos', icon: <Cookie className="h-12 w-12" /> },
+  { name: 'Doces', icon: <Sparkles className="h-12 w-12" /> },
+  { name: 'Diversos', icon: <ShoppingBasket className="h-12 w-12" /> },
+  { name: 'Outros', icon: <Sprout className="h-12 w-12" /> },
 ];
 
 const bestSellers: Product[] = products.slice(0, 10);
@@ -36,16 +36,16 @@ const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder, onCateg
         <p className="text-sm text-muted-foreground">
           Navegue pelas categorias de produtos.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
           {categories.map((category) => (
             <Button
               key={category.name}
               variant="outline"
-              className="h-24 flex flex-col items-center justify-center gap-2 p-2 text-center bg-primary/5 hover:bg-primary/10 border-primary/20"
+              className="h-28 flex flex-col items-center justify-center gap-2 p-2 text-center bg-primary/5 hover:bg-primary/10 border-primary/20"
               onClick={() => onCategoryClick(category.name)}
             >
               {category.icon}
-              <span className="text-xs font-semibold">{category.name}</span>
+              <span className="text-sm font-semibold">{category.name}</span>
             </Button>
           ))}
         </div>

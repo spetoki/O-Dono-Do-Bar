@@ -166,14 +166,14 @@ const Home: FC = () => {
           </div>
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
              {/* Left Column */}
-            <div className="md:col-span-1 flex flex-col gap-4">
+            <div className="md:col-span-2 flex flex-col gap-4">
                 <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4">
                   <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} onCategoryClick={openCatalog} />
                 </div>
             </div>
 
             {/* Right Column */}
-            <div className="md:col-span-2 flex flex-col gap-4">
+            <div className="md:col-span-1 flex flex-col gap-4">
               <div className="bg-primary text-primary-foreground p-2 rounded-md flex justify-between items-center gap-2">
                 <h3 className="font-bold">LISTA DE PRODUTOS</h3>
                 <div className="flex gap-2">
