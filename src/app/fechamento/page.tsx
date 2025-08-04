@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { salesData, type Sale } from '@/data/sales';
+import { salesData as initialSalesData, type Sale } from '@/data/sales';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { X, Printer, Calculator, CreditCard, ClipboardList, BookUser, Check, Library } from 'lucide-react';
@@ -51,15 +51,26 @@ export default function CloseoutPage() {
   const [countedCash, setCountedCash] = useState('');
   const [countedCardPix, setCountedCardPix] = useState('');
   const [countedFiado, setCountedFiado] = useState('');
-  
+  const [allSales, setAllSales] = useState<Sale[]>(initialSalesData);
+
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+
+  useEffect(() => {
+    const storedSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
+    const initialSalesIds = new Set(initialSalesData.map(s => s.id));
+    const uniqueStoredSales = storedSales.filter(s => !initialSalesIds.has(s.id));
+
+    const combinedSales = [...initialSalesData, ...uniqueStoredSales];
+    setAllSales(combinedSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  }, []);
+
 
   // Memoized sales data for today
   const todaysSales = useMemo(() => {
     const now = new Date();
-    return salesData.filter(sale => new Date(sale.date).toDateString() === now.toDateString());
-  }, []);
+    return allSales.filter(sale => new Date(sale.date).toDateString() === now.toDateString());
+  }, [allSales]);
 
   // Filter sales for the logged-in operator
   const operatorSales = useMemo(() => {
@@ -69,17 +80,17 @@ export default function CloseoutPage() {
 
   // Totals for the logged-in operator
   const { 
-    expectedCash: operatorExpectedCash, 
-    expectedCardPix: operatorExpectedCardPix, 
-    expectedFiado: operatorExpectedFiado, 
+    cash: operatorExpectedCash, 
+    cardPix: operatorExpectedCardPix, 
+    fiado: operatorExpectedFiado, 
     totalRevenue: operatorTotalRevenue 
   } = useMemo(() => calculateTotals(operatorSales), [operatorSales]);
 
   // Totals for all of today's sales (for admin view)
   const { 
-    expectedCash: totalExpectedCash, 
-    expectedCardPix: totalExpectedCardPix, 
-    expectedFiado: totalExpectedFiado, 
+    cash: totalExpectedCash, 
+    cardPix: totalExpectedCardPix, 
+    fiado: totalExpectedFiado, 
     totalRevenue: totalRevenueAll 
   } = useMemo(() => calculateTotals(todaysSales), [todaysSales]);
 

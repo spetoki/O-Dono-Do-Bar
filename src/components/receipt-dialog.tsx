@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import type { OrderItem, Customer } from '@/types';
+import type { OrderItem, Customer, Sale } from '@/types';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Input } from './ui/input';
@@ -24,6 +24,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/context/auth-context';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 type DiscountType = 'amount' | 'percentage';
@@ -56,6 +57,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   const [discountType, setDiscountType] = useState<DiscountType>('amount');
   const [discountValue, setDiscountValue] = useState('');
@@ -155,19 +157,19 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   };
   
   const handleFinalize = () => {
+    if (!user) {
+        toast({
+            title: "Erro!",
+            description: "Nenhum usuário logado. Não é possível finalizar a venda.",
+            variant: "destructive"
+        })
+        return;
+    }
+    
+    // 1. Update customer debt if 'fiado'
     if (paymentMethod === 'fiado' && selectedCustomer) {
       const customerId = parseInt(selectedCustomer, 10);
       
-      // Update debt in initial customers if found there
-      const initialCustomerIndex = initialCustomers.findIndex(c => c.id === customerId);
-      if (initialCustomerIndex !== -1) {
-        // This is a demo; in a real app, this would be an API call.
-        // We're modifying the in-memory array, which won't persist across reloads
-        // but will update for the current session's view if the data source is not re-fetched.
-        console.warn("Debt of initial customers is not persisted in this demo.");
-      }
-
-      // Update debt in localStorage
       const storedCustomers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
       const updatedCustomers = storedCustomers.map(c => {
         if (c.id === customerId) {
@@ -176,9 +178,32 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         return c;
       });
       localStorage.setItem('customers', JSON.stringify(updatedCustomers));
+      
+      // Also update initial customers if present (for demo purposes)
+      const initialCustomerIndex = initialCustomers.findIndex(c => c.id === customerId);
+      if (initialCustomerIndex !== -1) {
+          initialCustomers[initialCustomerIndex].debt += total;
+      }
     }
 
-    console.log(`Venda finalizada com CPF: ${cpf}, Cliente: ${selectedCustomer}, ID: ${saleId.current}`);
+    // 2. Create the new sale object
+    const newSale: Sale = {
+        id: saleId.current,
+        date: new Date().toISOString(),
+        items: orderItems,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        paymentMethod: paymentMethod,
+        operatorId: user.id,
+        operatorName: user.name
+    };
+
+    // 3. Save the new sale to localStorage
+    const existingSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
+    const updatedSales = [...existingSales, newSale];
+    localStorage.setItem('sales', JSON.stringify(updatedSales));
+
     toast({
         title: "Venda Finalizada!",
         description: `Venda ${saleId.current} concluída com sucesso.`,
