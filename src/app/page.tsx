@@ -114,8 +114,8 @@ const HomePage: FC = () => {
     );
   }, [orderItems]);
 
-  const tax = useMemo(() => subtotal * 0.08, [subtotal]);
-  const total = useMemo(() => subtotal + tax, [subtotal, tax]);
+  // This is a mock calculation. The final tax is calculated in the receipt dialog based on settings.
+  const total = useMemo(() => subtotal, [subtotal]);
   
   const change = useMemo(() => {
     return amountPaid > total ? amountPaid - total : 0;
@@ -311,7 +311,7 @@ const HomePage: FC = () => {
         onFinalize={handleFinalizeAndClear}
         orderItems={orderItems}
         subtotal={subtotal}
-        tax={tax}
+        tax={0}
         total={total}
         onAmountPaidChange={setAmountPaid}
         amountPaid={amountPaid}

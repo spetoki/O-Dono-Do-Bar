@@ -333,7 +333,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         <Separator className="border-dashed border-black my-1"/>
                         <div className="text-center space-y-1 mt-2 text-[10px]">
                             <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
-                            <p>Tributos totais aprox: {formatCurrency(tax)}</p>
+                            <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
                             <p className="font-bold">{appSettings.receiptMessage}</p>
                         </div>
                     </footer>
