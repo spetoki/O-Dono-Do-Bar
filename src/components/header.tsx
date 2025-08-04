@@ -65,7 +65,6 @@ const Header: FC = () => {
             const buttonProps = {
                 variant: active ? 'default' : 'secondary',
                 className: cn(active && 'bg-primary-foreground/90 text-primary hover:bg-primary-foreground'),
-                onClick: onClick
             };
 
             return onClick ? (
