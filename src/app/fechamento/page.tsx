@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { salesData, type Sale } from '@/data/sales';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { X, Printer, Calculator, Scale } from 'lucide-react';
+import { X, Printer, Calculator, Scale, CreditCard, ClipboardList } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -38,7 +38,12 @@ export default function CloseoutPage() {
 
   const totalsByPaymentMethod = useMemo(() => {
     return todaysSales.reduce((acc, sale) => {
-      acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + sale.total;
+      const key = sale.paymentMethod;
+      if (key === 'cartao' || key === 'pix') {
+          acc['cartao_pix'] = (acc['cartao_pix'] || 0) + sale.total;
+      } else {
+          acc[key] = (acc[key] || 0) + sale.total;
+      }
       return acc;
     }, {} as Record<string, number>);
   }, [todaysSales]);
@@ -49,7 +54,7 @@ export default function CloseoutPage() {
   
   const cashDifference = useMemo(() => {
       const counted = parseFloat(countedCash.replace(',', '.')) || 0;
-      if (counted === 0) return 0;
+      if (counted === 0 && expectedCash > 0) return -expectedCash;
       return counted - expectedCash;
   }, [countedCash, expectedCash]);
 
@@ -123,34 +128,22 @@ export default function CloseoutPage() {
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Outros Pagamentos</CardTitle>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
+                    <CardTitle className="text-sm font-medium">Cartão / Pix</CardTitle>
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(totalRevenue - (totalsByPaymentMethod['dinheiro'] || 0))}</div>
-                     <p className="text-xs text-muted-foreground">Cartão, Pix e Fiado</p>
+                    <div className="text-2xl font-bold">{formatCurrency(totalsByPaymentMethod['cartao_pix'] || 0)}</div>
+                     <p className="text-xs text-muted-foreground">Pagamentos eletrônicos</p>
                 </CardContent>
             </Card>
-             <Card className={cn(
-                "border-2",
-                cashDifference > 0 && "border-blue-500",
-                cashDifference < 0 && "border-destructive"
-             )}>
+             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Diferença no Caixa</CardTitle>
-                    <Scale className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">Vendas Fiado</CardTitle>
+                    <ClipboardList className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className={cn(
-                        "text-2xl font-bold",
-                        cashDifference > 0 && "text-blue-500",
-                        cashDifference < 0 && "text-destructive"
-                    )}>
-                        {formatCurrency(cashDifference)}
-                    </div>
-                     <p className="text-xs text-muted-foreground">
-                        {cashDifference > 0 ? "Sobra" : cashDifference < 0 ? "Falta" : "Caixa correto"}
-                    </p>
+                    <div className="text-2xl font-bold">{formatCurrency(totalsByPaymentMethod['fiado'] || 0)}</div>
+                     <p className="text-xs text-muted-foreground">Total pendente de clientes</p>
                 </CardContent>
             </Card>
           </div>
@@ -161,7 +154,7 @@ export default function CloseoutPage() {
                 <CardDescription>Insira o valor total em dinheiro contado no caixa para verificar a diferença.</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid md:grid-cols-3 gap-4 items-end">
+                <div className="grid md:grid-cols-4 gap-4 items-end">
                     <div className="space-y-2">
                         <Label htmlFor="expected-cash">Valor Esperado (Dinheiro)</Label>
                         <Input id="expected-cash" value={formatCurrency(expectedCash)} readOnly className="font-mono text-lg" />
@@ -188,6 +181,25 @@ export default function CloseoutPage() {
                             {formatCurrency(cashDifference)}
                         </div>
                     </div>
+                     <Card className={cn(
+                        "border-2 h-full flex flex-col justify-center",
+                        cashDifference > 0 && "border-blue-500",
+                        cashDifference < 0 && "border-destructive"
+                     )}>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
+                            <CardTitle className="text-sm font-medium">Status</CardTitle>
+                            <Scale className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent className="p-2 pt-0">
+                            <div className={cn(
+                                "text-lg font-bold",
+                                cashDifference > 0 && "text-blue-500",
+                                cashDifference < 0 && "text-destructive"
+                            )}>
+                                {cashDifference > 0 ? "Sobra" : cashDifference < 0 ? "Falta" : "Caixa Correto"}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </CardContent>
           </Card>
