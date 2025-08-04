@@ -92,7 +92,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   }, [subtotal, discountAmount]);
 
   const tax = useMemo(() => {
-    const taxRate = parseFloat(appSettings.taxRate) || 0;
+    const taxRate = parseFloat(appSettings.taxRate.replace(',', '.')) || 0;
     return total * (taxRate / 100);
   }, [total, appSettings.taxRate]);
 
@@ -257,9 +257,9 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       <DialogContent className="max-w-4xl h-[95vh] flex flex-col p-2 md:p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
         {isFinalized ? (
              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                 <DialogHeader>
-                    <DialogTitle className="text-center text-2xl md:text-3xl">Venda Concluída!</DialogTitle>
-                 </DialogHeader>
+                <DialogHeader>
+                    <DialogTitle className="text-3xl font-bold">Venda Concluída!</DialogTitle>
+                </DialogHeader>
                  <div className="printable-area font-mono text-xs p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-[320px] h-auto flex flex-col shadow-lg">
                     <header className="text-center space-y-1 flex-shrink-0">
                         <p className="font-bold text-sm">{appSettings.companyName}</p>
@@ -341,7 +341,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
                 <div className="flex gap-2 w-full max-w-[320px]">
                     <Button onClick={handlePrint} variant="outline" className="h-12 text-base flex-1">
-                        <Printer className="mr-2" /> Imprimir
+                        <Printer className="mr-2" /> Imprimir Recibo
                     </Button>
                     <Button onClick={handleNewSale} className="h-12 text-base flex-1">
                         <RotateCw className="mr-2" /> Nova Venda
@@ -544,4 +544,3 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
 export default ReceiptDialog;
 
-    
