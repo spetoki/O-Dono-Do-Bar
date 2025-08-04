@@ -1,3 +1,4 @@
+
 'use client';
 
 import { type FC, useState, useEffect, useMemo, ChangeEvent, useRef } from 'react';
@@ -21,6 +22,7 @@ import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, Chec
 import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 type DiscountType = 'amount' | 'percentage';
@@ -275,10 +277,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" size="icon">
-                            <UserPlus className="h-4 w-4"/>
-                            <span className="sr-only">Adicionar Cliente</span>
-                        </Button>
+                        <Link href="/clientes/novo" target="_blank">
+                            <Button variant="outline" size="icon">
+                                <UserPlus className="h-4 w-4"/>
+                                <span className="sr-only">Adicionar Cliente</span>
+                            </Button>
+                        </Link>
                     </div>
                 </div>
                 ) : (

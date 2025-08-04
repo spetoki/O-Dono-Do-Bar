@@ -31,10 +31,12 @@ export default function CustomersPage() {
             <CardDescription>Cadastre, edite e consulte os clientes.</CardDescription>
         </div>
         <div className='flex gap-2'>
+            <Link href="/clientes/novo">
              <Button>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Adicionar Cliente
             </Button>
+            </Link>
             <Link href="/">
             <Button variant="outline">
                 <X className="mr-2 h-4 w-4" />
