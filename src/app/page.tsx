@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, ChangeEvent } from 'react';
 import type { OrderItem, Product } from '@/types';
 import { products as allProducts } from '@/data/products';
 import Header from '@/components/header';
@@ -14,6 +14,7 @@ import ProductCatalogDialog from '@/components/product-catalog-dialog';
 import { useToast } from '@/hooks/use-toast';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import ReceiptDialog from '@/components/receipt-dialog';
+import { Input } from '@/components/ui/input';
 
 
 const Home: FC = () => {
@@ -23,6 +24,7 @@ const Home: FC = () => {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [amountPaid, setAmountPaid] = useState(0);
+  const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const { toast } = useToast();
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
@@ -80,6 +82,7 @@ const Home: FC = () => {
   const clearOrder = () => {
     setOrderItems([]);
     setAmountPaid(0);
+    setAmountPaidDisplay('');
   };
 
   const subtotal = useMemo(() => {
@@ -103,7 +106,7 @@ const Home: FC = () => {
 
   const openFinalizeSaleDialog = () => {
     if (orderItems.length > 0) {
-      setAmountPaid(0); // Reset amount paid so the input is blank for cash payments
+      // Pass the amount from the main page to the dialog
       setIsReceiptOpen(true);
     } else {
       toast({
@@ -117,6 +120,19 @@ const Home: FC = () => {
   const handleFinalizeAndClear = () => {
     setIsReceiptOpen(false);
     clearOrder();
+  };
+  
+  const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAmountPaidDisplay(value);
+    
+    // Allow empty string or valid number format up to 1,000,000
+    if (value === '' || /^\d{1,7}([,.]\d{0,2})?$/.test(value)) {
+       const numericValue = parseFloat(value.replace(',', '.')) || 0;
+       if (numericValue <= 1000000) {
+         setAmountPaid(numericValue);
+       }
+    }
   };
 
   const formatCurrency = (amount: number) =>
@@ -194,26 +210,31 @@ const Home: FC = () => {
                     onRemoveItem={removeFromOrder}
                   />
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-primary text-primary-foreground p-4 rounded-lg text-center">
-                    <h4 className="font-bold text-sm">SUBTOTAL</h4>
-                    <p className="font-mono text-3xl font-extrabold">{formatCurrency(subtotal)}</p>
+              <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-background text-foreground p-2 rounded-lg text-center flex flex-col justify-between">
+                    <h4 className="font-bold text-xs uppercase">Valor Recebido</h4>
+                    <Input 
+                      value={amountPaidDisplay} 
+                      onChange={handleAmountChange} 
+                      className="text-right font-mono text-xl h-10 border-2 border-primary" 
+                      placeholder="R$ 0,00"
+                    />
                   </div>
-                  <div className="bg-primary text-primary-foreground p-4 rounded-lg text-center">
-                    <h4 className="font-bold text-sm">TOTAL</h4>
-                    <p className="font-mono text-3xl font-extrabold">{formatCurrency(total)}</p>
+                  <div className="bg-primary text-primary-foreground p-2 rounded-lg text-center">
+                    <h4 className="font-bold text-xs uppercase">Total</h4>
+                    <p className="font-mono text-2xl font-extrabold flex items-center justify-center h-full">{formatCurrency(total)}</p>
                   </div>
-                   <div className="bg-accent text-accent-foreground p-4 rounded-lg text-center">
-                    <h4 className="font-bold text-sm">TROCO</h4>
-                    <p className="font-mono text-3xl font-extrabold">{formatCurrency(change)}</p>
+                   <div className="bg-accent text-accent-foreground p-2 rounded-lg text-center">
+                    <h4 className="font-bold text-xs uppercase">Troco</h4>
+                    <p className="font-mono text-2xl font-extrabold flex items-center justify-center h-full">{formatCurrency(change)}</p>
                   </div>
                 </div>
                  <div className="flex gap-2">
                     <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-lg">
-                      <X className="mr-2"/> CANCELAR VENDA (F5)
+                      <X className="mr-2"/> CANCELAR (F5)
                       </Button>
                     <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700 text-white">
-                      <DollarSign className="mr-2"/> FINALIZAR VENDA (F10)
+                      <DollarSign className="mr-2"/> FINALIZAR (F10)
                       </Button>
                   </div>
             </div>

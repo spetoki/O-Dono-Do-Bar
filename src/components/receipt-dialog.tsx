@@ -61,13 +61,18 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         saleDate.current = now.toLocaleDateString('pt-BR');
         saleTime.current = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-
+      // If the payment method is not cash, set amountPaid to total
       if (paymentMethod !== 'dinheiro') {
         onAmountPaidChange(total);
         setAmountPaidDisplay(formatPrice(total));
       } else {
-        onAmountPaidChange(0);
-        setAmountPaidDisplay('');
+        // If it's cash and an amount has been passed from the main page, use it.
+        if (amountPaid > 0) {
+          setAmountPaidDisplay(formatPrice(amountPaid));
+        } else {
+          onAmountPaidChange(0);
+          setAmountPaidDisplay('');
+        }
       }
       setCpf(''); // Reset CPF on open
     }
@@ -75,17 +80,21 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   }, [isOpen, paymentMethod, total]);
 
   useEffect(() => {
-     if (paymentMethod === 'dinheiro') {
-      if (amountPaid === 0) {
+    // Sync the dialog's local display state if the prop changes (e.g., from main page input)
+    if (paymentMethod === 'dinheiro') {
+       if (amountPaid === 0) {
         setAmountPaidDisplay('');
-      } else {
-        // This keeps the value from the state if it's not being actively edited
-        // setAmountPaidDisplay(amountPaid.toFixed(2).replace('.',','));
+      } else if (amountPaid.toString() !== amountPaidDisplay.replace(',', '.')) {
+        // Update display only if it's different to avoid overwriting user input
+        // setAmountPaidDisplay(formatPrice(amountPaid));
       }
     } else {
-      setAmountPaidDisplay(formatPrice(total));
+       onAmountPaidChange(total); // Ensure amount paid is total for other methods
+       setAmountPaidDisplay(formatPrice(total));
     }
-  }, [amountPaid, paymentMethod, total]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[amountPaid, paymentMethod]);
+
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('pt-BR', {
@@ -135,8 +144,9 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       <DialogContent className="max-w-sm" onOpenAutoFocus={(e) => {
           e.preventDefault();
           const input = document.getElementById('amount-paid');
-          if (input) {
+          if (input && paymentMethod === 'dinheiro') {
             (input as HTMLInputElement).focus();
+            (input as HTMLInputElement).select();
           }
       }}>
          <div className="printable-area font-mono text-xs p-2 bg-white text-black">
