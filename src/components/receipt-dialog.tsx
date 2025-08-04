@@ -233,6 +233,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   
     const center = (text: string) => text.padStart((width + text.length) / 2).padEnd(width);
     const line = (char = '-') => char.repeat(width);
+    const align = (left: string, right: string) => left.padEnd(width - right.length) + right;
+
   
     // Header
     lines.push(center(`*** ${appSettings.companyName.toUpperCase()} ***`));
@@ -269,22 +271,21 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     lines.push(line());
 
     // Totals
-    const formatTotals = (label: string, value: string) => `${label.padEnd(width - value.length)}${value}`;
-    lines.push(formatTotals('SUBTOTAL:', `R$ ${subtotal.toFixed(2)}`));
+    lines.push(align('SUBTOTAL:', `R$ ${subtotal.toFixed(2)}`));
     if (discountAmount > 0) {
-        lines.push(formatTotals('DESCONTO:', `R$ ${discountAmount.toFixed(2)}`));
+        lines.push(align('DESCONTO:', `R$ ${discountAmount.toFixed(2)}`));
     }
-    lines.push(formatTotals('TOTAL A PAGAR:', `R$ ${total.toFixed(2)}`));
-    lines.push(formatTotals('FORMA DE PAGAMENTO:', paymentMethod.toUpperCase()));
+    lines.push(align('TOTAL A PAGAR:', `R$ ${total.toFixed(2)}`));
+    lines.push(align('FORMA DE PAGAMENTO:', paymentMethod.toUpperCase()));
     if (paymentMethod === 'dinheiro') {
-        lines.push(formatTotals('TROCO:', `R$ ${change.toFixed(2)}`));
+        lines.push(align('TROCO:', `R$ ${change.toFixed(2)}`));
     }
     
     lines.push(line());
 
     // Footer
     if(tax > 0) {
-        lines.push(center(`Tributos Totais Aprox. (Lei 12.741/12): R$ ${tax.toFixed(2)}`));
+      lines.push(center(`Tributos Totais Aprox. (Lei 12.741/12): R$ ${tax.toFixed(2)}`));
     }
     lines.push(center(`Emitido conforme o Ajuste SINIEF 07/05.`));
     lines.push('');
@@ -442,3 +443,5 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
+
+    
