@@ -103,21 +103,31 @@ export default function NewProductPage() {
   }, [price, costPrice, form]);
 
   useEffect(() => {
-    if (state.message && !state.isSuccess) { // Only show toast on error or initial message
+    if (state.message && !state.isSuccess) { // Only show toast on error
       toast({
-        title: state.isError ? 'Erro!' : 'Sucesso!',
+        title: state.isError ? 'Erro!' : 'Aviso',
         description: state.message,
         variant: state.isError ? 'destructive' : 'default',
       });
     }
 
-    if (state.isSuccess) {
-        // Logic to save to local storage handled by the action
+    if (state.isSuccess && state.productData) {
         toast({
             title: 'Sucesso!',
             description: state.message,
-            variant: 'default',
         });
+
+        const existingProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
+        
+        const newProduct: Product = {
+            ...state.productData,
+            id: new Date().getTime(),
+            imageUrl: state.productData.imageUrl || 'https://placehold.co/200x200',
+            dataAiHint: 'product',
+        };
+
+        const updatedProducts = [...existingProducts, newProduct];
+        localStorage.setItem('products', JSON.stringify(updatedProducts));
         
         const timer = setTimeout(() => {
             router.push('/estoque');
@@ -125,25 +135,33 @@ export default function NewProductPage() {
         return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, toast, router]);
+  }, [state, router, toast]);
   
   const fileRef = form.register('image');
 
   const onSubmit = async (data: ProductFormValues) => {
     const formData = new FormData();
+
+    const appendOtherDataAndDispatch = (formData: FormData, data: ProductFormValues) => {
+        Object.entries(data).forEach(([key, value]) => {
+            if (key !== 'image' && value !== undefined && value !== null) {
+                formData.append(key, String(value));
+            }
+        });
+        dispatch(formData);
+    };
     
     // Handle file upload
     if (data.image && data.image.length > 0) {
         const file = data.image[0];
         const reader = new FileReader();
-        reader.readAsDataURL(file);
+        
         reader.onload = () => {
             const base64Image = reader.result as string;
             formData.append('imageUrl', base64Image);
-            
-            // Append other data and dispatch
             appendOtherDataAndDispatch(formData, data);
         };
+
         reader.onerror = (error) => {
             console.error("Error converting image to base64:", error);
             toast({
@@ -152,20 +170,14 @@ export default function NewProductPage() {
                 variant: 'destructive',
             });
         };
+
+        reader.readAsDataURL(file);
     } else {
         // No image, just append other data and dispatch
         appendOtherDataAndDispatch(formData, data);
     }
   };
 
-  const appendOtherDataAndDispatch = (formData: FormData, data: ProductFormValues) => {
-    Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'image' && value !== undefined) {
-             formData.append(key, String(value));
-        }
-    });
-    dispatch(formData);
-  };
 
   const uniqueCategories = [...new Set(initialProducts.map(p => p.category))];
 
