@@ -60,6 +60,16 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [discountType, setDiscountType] = useState<DiscountType>('amount');
   const [discountValue, setDiscountValue] = useState('');
 
+  const [appSettings, setAppSettings] = useState({
+    companyName: 'DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE',
+    companyCnpj: '45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA',
+    companyAddress: 'Rua Sarjento Jose Das Quantas, 6589, Santa felicidade - Cascavel PR',
+    companyPhone: 'Fone 45 99969-6969 e 45 99966-9966',
+    taxRate: '8.00',
+    receiptMessage: 'Obrigado pela preferência!',
+  });
+
+
   const saleId = useRef('');
   const saleDate = useRef('');
   const saleTime = useRef('');
@@ -78,7 +88,11 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     return newTotal > 0 ? newTotal : 0;
   }, [subtotal, discountAmount]);
 
-  const tax = useMemo(() => total * 0.08, [total]);
+  const tax = useMemo(() => {
+    const taxRate = parseFloat(appSettings.taxRate) || 0;
+    return total * (taxRate / 100);
+  }, [total, appSettings.taxRate]);
+
 
   const change = useMemo(() => {
     return localAmountPaid > total ? localAmountPaid - total : 0;
@@ -91,6 +105,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       const now = new Date();
       saleDate.current = now.toLocaleDateString('pt-BR');
       saleTime.current = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      // Load app settings from localStorage
+      const loadedSettings = localStorage.getItem('appSettings');
+      if (loadedSettings) {
+        setAppSettings(JSON.parse(loadedSettings));
+      }
 
       // Load customers from localStorage
       const storedCustomers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
@@ -216,10 +236,10 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
                 <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
                     <header className="text-center space-y-1 flex-shrink-0">
-                        <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
-                        <p className="text-[10px]">CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
-                        <p className="text-[10px]">Rua Sarjento Jose Das Quantas, 6589, Santa felicidade - Cascavel PR</p>
-                        <p className="text-[10px]">Fone 45 99969-6969 e 45 99966-9966</p>
+                        <p className="font-bold">{appSettings.companyName}</p>
+                        <p className="text-[10px]">CNPJ: {appSettings.companyCnpj}</p>
+                        <p className="text-[10px]">{appSettings.companyAddress}</p>
+                        <p className="text-[10px]">Fone: {appSettings.companyPhone}</p>
                         <Separator className="border-dashed border-black my-1"/>
                         <p className="text-[10px]">Documento auxiliar da nota fiscal de consumidor eletronica</p>
                         <div className="flex justify-between text-[10px]">
@@ -289,7 +309,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         <div className="text-center space-y-1 mt-2 text-[10px]">
                             <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
                             <p>Tributos totais aprox: {formatCurrency(tax)}</p>
-                            <p className="font-bold">Obrigado pela preferência!</p>
+                            <p className="font-bold">{appSettings.receiptMessage}</p>
                         </div>
                     </footer>
                 </div>
