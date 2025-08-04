@@ -16,9 +16,10 @@ import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import ReceiptDialog from '@/components/receipt-dialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeProvider } from '@/context/theme-context';
 
 
-const Home: FC = () => {
+const HomePageContent: FC = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [initialCategory, setInitialCategory] = useState('Todos');
@@ -276,5 +277,13 @@ const Home: FC = () => {
     </div>
   );
 };
+
+const Home: FC = () => {
+  return (
+    <ThemeProvider>
+      <HomePageContent />
+    </ThemeProvider>
+  )
+}
 
 export default Home;

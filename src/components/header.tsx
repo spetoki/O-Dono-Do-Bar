@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X } from 'lucide-react';
+import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X, Cog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -46,6 +46,12 @@ const Header: FC = () => {
       label: 'Clientes',
       icon: Users,
       active: pathname === '/clientes' || pathname.startsWith('/clientes/'),
+    },
+     {
+      href: '/configuracoes',
+      label: 'Configurações',
+      icon: Cog,
+      active: pathname === '/configuracoes',
     },
   ];
   
