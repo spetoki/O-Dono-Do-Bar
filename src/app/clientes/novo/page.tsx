@@ -48,6 +48,14 @@ export default function NewCustomerPage() {
       });
     }
   }, [state, toast]);
+  
+  const onSubmit = form.handleSubmit(async (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('cpf', data.cpf);
+    formData.append('phone', data.phone);
+    dispatch(formData);
+  });
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -58,7 +66,7 @@ export default function NewCustomerPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form action={dispatch} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -102,7 +110,7 @@ export default function NewCustomerPage() {
                 <Link href="/clientes">
                   <Button variant="outline" type="button">
                     <X className="mr-2 h-4 w-4" />
-                    Cancelar
+                    Voltar
                   </Button>
                 </Link>
                 <Button type="submit">
