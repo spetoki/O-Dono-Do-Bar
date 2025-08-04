@@ -2,10 +2,12 @@
 'use server';
 
 import { z } from 'zod';
+import { updateProduct } from '@/services/product-service';
 import type { Product } from '@/types';
 
+
 const productSchema = z.object({
-  id: z.coerce.number(),
+  id: z.string(),
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   barcode: z.string().optional(),
   costPrice: z.coerce.number().positive({ message: 'O custo deve ser um número positivo.' }),
@@ -20,10 +22,9 @@ export interface FormState {
   message: string;
   isError: boolean;
   isSuccess: boolean;
-  productData?: z.infer<typeof productSchema>;
 }
 
-export async function updateProduct(
+export async function handleUpdateProduct(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
@@ -49,12 +50,13 @@ export async function updateProduct(
         };
     }
     
-    // Return validated data to be saved on the client-side (localStorage)
+    const { id, ...productData } = validatedFields.data;
+    await updateProduct(id, productData);
+    
     return {
       message: 'Produto atualizado com sucesso!',
       isError: false,
       isSuccess: true,
-      productData: validatedFields.data,
     };
 
   } catch (error) {

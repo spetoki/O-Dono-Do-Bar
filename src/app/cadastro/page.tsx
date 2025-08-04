@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
 import { Save, X, Percent, Upload, Barcode } from 'lucide-react';
-import { products as initialProducts } from '@/data/products';
+import { getProducts } from '@/services/product-service';
 import type { Product } from '@/types';
 
 const productSchema = z.object({
@@ -40,9 +40,11 @@ export default function NewProductPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
+
 
   const initialState: FormState = { message: '', isError: false, isSuccess: false };
-  const [state, dispatch] = useActionState(createProduct, initialState);
+  const [state, formAction] = useActionState(createProduct, initialState);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -57,6 +59,15 @@ export default function NewProductPage() {
       description: '',
     },
   });
+
+  useEffect(() => {
+    async function fetchCategories() {
+        const products = await getProducts();
+        const categories = [...new Set(products.map(p => p.category))];
+        setUniqueCategories(categories);
+    }
+    fetchCategories();
+  }, [])
 
   const costPrice = form.watch('costPrice');
   const profitMargin = form.watch('profitMargin');
@@ -106,44 +117,29 @@ export default function NewProductPage() {
   }, [price, costPrice, form]);
 
   useEffect(() => {
-    if (state.message && !state.isSuccess) { // Only show toast on error
+    if (state.message) {
       toast({
-        title: state.isError ? 'Erro!' : 'Aviso',
+        title: state.isError ? 'Erro!' : 'Sucesso!',
         description: state.message,
         variant: state.isError ? 'destructive' : 'default',
       });
+
+      if (state.isSuccess) {
+          const timer = setTimeout(() => {
+              router.push('/estoque');
+          }, 1000);
+          return () => clearTimeout(timer);
+      }
     }
-
-    if (state.isSuccess && state.productData) {
-        toast({
-            title: 'Sucesso!',
-            description: state.message,
-        });
-
-        const existingProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
-        
-        const newProduct: Product = {
-            ...state.productData,
-            id: new Date().getTime(),
-            imageUrl: state.productData.imageUrl || 'https://placehold.co/200x200',
-            dataAiHint: 'product',
-        };
-
-        const updatedProducts = [...existingProducts, newProduct];
-        localStorage.setItem('products', JSON.stringify(updatedProducts));
-        
-        const timer = setTimeout(() => {
-            router.push('/estoque');
-        }, 1000);
-        return () => clearTimeout(timer);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, router, toast]);
   
   const fileRef = form.register('image');
 
-  const onSubmit = (formData: FormData) => {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     const data = form.getValues();
+
     if (data.image && data.image.length > 0) {
       const file = data.image[0];
       const reader = new FileReader();
@@ -151,7 +147,7 @@ export default function NewProductPage() {
       reader.onload = () => {
         const base64Image = reader.result as string;
         formData.set('imageUrl', base64Image);
-        dispatch(formData);
+        formAction(formData);
       };
 
       reader.onerror = (error) => {
@@ -165,12 +161,10 @@ export default function NewProductPage() {
 
       reader.readAsDataURL(file);
     } else {
-      dispatch(formData);
+      formAction(formData);
     }
   };
 
-
-  const uniqueCategories = [...new Set(initialProducts.map(p => p.category))];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -181,7 +175,7 @@ export default function NewProductPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form action={dispatch} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4">
                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2 space-y-4">
                      <FormField
@@ -349,5 +343,3 @@ export default function NewProductPage() {
     </div>
   );
 }
-
-    

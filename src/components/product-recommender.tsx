@@ -4,7 +4,6 @@
 import type { FC } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/types';
-import { products } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Beer, Cigarette, Cookie, ShoppingBasket, Sparkles, Sprout } from 'lucide-react';
@@ -14,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 interface ProductRecommenderProps {
   onAddToOrder: (product: Product) => void;
   onCategoryClick: (category: string) => void;
+  products: Product[];
 }
 
 const categories = [
@@ -25,9 +25,10 @@ const categories = [
   { name: 'Outros', icon: <Sprout className="h-8 w-8 md:h-12 md:w-12" /> },
 ];
 
-const bestSellers: Product[] = products.slice(0, 10);
 
-const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder, onCategoryClick }) => {
+const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder, onCategoryClick, products }) => {
+
+  const bestSellers: Product[] = products.sort((a,b) => b.stock - a.stock).slice(0, 10);
 
   return (
     <div className="space-y-4">

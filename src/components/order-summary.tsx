@@ -18,8 +18,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface OrderSummaryProps {
   items: OrderItem[];
-  onUpdateQuantity: (productId: number, quantity: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onUpdateQuantity: (productId: string, quantity: number) => void;
+  onRemoveItem: (productId: string) => void;
 }
 
 const OrderSummary: FC<OrderSummaryProps> = ({
@@ -55,7 +55,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-destructive/80 hover:text-destructive shrink-0"
-                      onClick={() => onRemoveItem(product.id)}
+                      onClick={() => onRemoveItem(product.id as string)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -66,7 +66,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => onUpdateQuantity(product.id, quantity - 1)}
+                        onClick={() => onUpdateQuantity(product.id as string, quantity - 1)}
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -75,7 +75,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => onUpdateQuantity(product.id, quantity + 1)}
+                        onClick={() => onUpdateQuantity(product.id as string, quantity + 1)}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -127,7 +127,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => onUpdateQuantity(product.id, quantity - 1)}
+                          onClick={() => onUpdateQuantity(product.id as string, quantity - 1)}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -136,7 +136,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
-                          onClick={() => onUpdateQuantity(product.id, quantity + 1)}
+                          onClick={() => onUpdateQuantity(product.id as string, quantity + 1)}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -149,7 +149,7 @@ const OrderSummary: FC<OrderSummaryProps> = ({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-destructive/80 hover:text-destructive"
-                        onClick={() => onRemoveItem(product.id)}
+                        onClick={() => onRemoveItem(product.id as string)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

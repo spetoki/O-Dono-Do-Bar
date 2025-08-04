@@ -2,7 +2,9 @@
 'use server';
 
 import { z } from 'zod';
+import { addProduct } from '@/services/product-service';
 import type { Product } from '@/types';
+
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -13,13 +15,13 @@ const productSchema = z.object({
   category: z.string().min(3, { message: 'A categoria deve ter pelo menos 3 caracteres.' }),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
+  dataAiHint: z.string().optional(),
 });
 
 export interface FormState {
   message: string;
   isError: boolean;
   isSuccess: boolean;
-  productData?: z.infer<typeof productSchema>;
 }
 
 export async function createProduct(
@@ -35,7 +37,8 @@ export async function createProduct(
       stock: formData.get('stock'),
       category: formData.get('category'),
       description: formData.get('description'),
-      imageUrl: formData.get('imageUrl'),
+      imageUrl: formData.get('imageUrl') || 'https://placehold.co/200x200',
+      dataAiHint: 'product',
     });
 
     if (!validatedFields.success) {
@@ -47,12 +50,20 @@ export async function createProduct(
         };
     }
     
-    // Return validated data to be saved on the client-side (localStorage)
+    const newProduct = await addProduct(validatedFields.data);
+
+    if (!newProduct) {
+       return {
+            message: 'Ocorreu um erro ao salvar o produto no banco de dados.',
+            isError: true,
+            isSuccess: false,
+        };
+    }
+
     return {
       message: 'Produto cadastrado com sucesso!',
       isError: false,
       isSuccess: true,
-      productData: validatedFields.data,
     };
 
   } catch (error) {

@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { products as initialProducts } from '@/data/products';
 import type { Product } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -19,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { X, PackagePlus, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getProducts } from '@/services/product-service';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('pt-BR', {
@@ -28,28 +29,17 @@ const formatCurrency = (amount: number) =>
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Load products from localStorage and merge with initial products
-    // This creates a unified list for display
-    const storedProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
-    
-    // Create a map of initial products for easy lookup
-    const initialProductsMap = new Map(initialProducts.map(p => [p.id, p]));
-
-    // Merge stored products with initial products. 
-    // If a product from localStorage has the same ID as an initial one,
-    // the one from localStorage (potentially edited) is used.
-    const mergedProducts = initialProducts.map(p => {
-        const storedVersion = storedProducts.find(sp => sp.id === p.id);
-        return storedVersion || p;
-    });
-
-    // Add new products from localStorage that are not in the initial list
-    const newProducts = storedProducts.filter(p => !initialProductsMap.has(p.id));
-
-    setProducts([...mergedProducts, ...newProducts]);
+    async function fetchProducts() {
+        setLoading(true);
+        const productsFromDb = await getProducts();
+        setProducts(productsFromDb);
+        setLoading(false);
+    }
+    fetchProducts();
   }, []);
 
   const productsByCategory = useMemo(() => {
@@ -72,9 +62,34 @@ export default function InventoryPage() {
 
   const sortedCategories = useMemo(() => Object.keys(productsByCategory).sort(), [productsByCategory]);
 
-  const handleEdit = (productId: number) => {
+  const handleEdit = (productId: string) => {
     router.push(`/estoque/editar/${productId}`);
   };
+  
+  const PageSkeleton = () => (
+     <Card>
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-80 mt-2" />
+        </div>
+        <div className='flex gap-2 w-full md:w-auto'>
+            <Skeleton className="h-10 w-36" />
+            <Skeleton className="h-10 w-24" />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </CardContent>
+    </Card>
+  )
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
 
   return (
     <Card>
@@ -100,7 +115,7 @@ export default function InventoryPage() {
       </CardHeader>
       <CardContent>
         <Accordion type="multiple" className="w-full">
-            {sortedCategories.map(category => (
+            {sortedCategories.length > 0 ? sortedCategories.map(category => (
                  <AccordionItem value={category} key={category}>
                     <AccordionTrigger className="text-lg font-medium hover:no-underline">
                         <div className="flex items-center gap-3">
@@ -138,7 +153,7 @@ export default function InventoryPage() {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(product.id)}>
+                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(product.id as string)}>
                                         <Pencil className="h-4 w-4" />
                                         <span className="sr-only">Editar</span>
                                         </Button>
@@ -150,7 +165,12 @@ export default function InventoryPage() {
                         </div>
                     </AccordionContent>
                  </AccordionItem>
-            ))}
+            )) : (
+                <div className="text-center py-10 text-muted-foreground">
+                    <p>Nenhum produto encontrado.</p>
+                    <p className="text-sm">Comece adicionando um novo produto para vê-lo aqui.</p>
+                </div>
+            )}
         </Accordion>
       </CardContent>
     </Card>

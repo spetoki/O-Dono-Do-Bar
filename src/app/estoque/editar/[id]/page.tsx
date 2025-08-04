@@ -9,7 +9,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 
-import { updateProduct, type FormState } from '@/app/estoque/editar/[id]/actions';
+import { handleUpdateProduct, type FormState } from '@/app/estoque/editar/[id]/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,12 +18,12 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
 import { Save, X, Percent, Upload, Barcode } from 'lucide-react';
-import { products as initialProducts } from '@/data/products';
+import { getProduct, getProducts } from '@/services/product-service';
 import type { Product } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const productSchema = z.object({
-  id: z.coerce.number(),
+  id: z.string(),
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   barcode: z.string().optional(),
   costPrice: z.coerce.number().positive({ message: 'O custo deve ser um número positivo.' }),
@@ -42,14 +42,15 @@ export default function EditProductPage() {
   const { toast } = useToast();
   const router = useRouter();
   const params = useParams();
-  const productId = Number(params.id);
+  const productId = params.id as string;
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
 
   const initialState: FormState = { message: '', isError: false, isSuccess: false };
-  const [state, dispatch] = useActionState(updateProduct, initialState);
+  const [state, formAction] = useActionState(handleUpdateProduct, initialState);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -58,26 +59,35 @@ export default function EditProductPage() {
   useEffect(() => {
     if (!productId) return;
     
-    const allProducts = [...initialProducts, ...JSON.parse(localStorage.getItem('products') || '[]')];
-    const productToEdit = allProducts.find(p => p.id === productId);
+    async function fetchProductData() {
+        const [productToEdit, allProducts] = await Promise.all([
+            getProduct(productId),
+            getProducts()
+        ]);
+        
+        if (productToEdit) {
+            setProduct(productToEdit);
+            const profitMargin = productToEdit.costPrice && productToEdit.price > productToEdit.costPrice
+            ? ((productToEdit.price / productToEdit.costPrice) - 1) * 100
+            : 0;
 
-    if (productToEdit) {
-      setProduct(productToEdit);
-      const profitMargin = productToEdit.costPrice && productToEdit.price > productToEdit.costPrice
-        ? ((productToEdit.price / productToEdit.costPrice) - 1) * 100
-        : 0;
+            form.reset({
+                ...productToEdit,
+                costPrice: productToEdit.costPrice || 0,
+                profitMargin: parseFloat(profitMargin.toFixed(2)),
+            });
+            setImagePreview(productToEdit.imageUrl);
+            
+            const categories = [...new Set(allProducts.map(p => p.category))];
+            setUniqueCategories(categories);
 
-      form.reset({
-        ...productToEdit,
-        costPrice: productToEdit.costPrice || 0,
-        profitMargin: parseFloat(profitMargin.toFixed(2)),
-      });
-      setImagePreview(productToEdit.imageUrl);
-    } else {
-        toast({ title: 'Erro', description: 'Produto não encontrado.', variant: 'destructive' });
-        router.push('/estoque');
+        } else {
+            toast({ title: 'Erro', description: 'Produto não encontrado.', variant: 'destructive' });
+            router.push('/estoque');
+        }
+        setLoading(false);
     }
-    setLoading(false);
+    fetchProductData();
   }, [productId, form, router, toast]);
 
   const costPrice = form.watch('costPrice');
@@ -126,46 +136,29 @@ export default function EditProductPage() {
   }, [price, costPrice, form]);
 
   useEffect(() => {
-    if (state.message && !state.isSuccess) { // Only show toast on error
+    if (state.message) {
       toast({
-        title: state.isError ? 'Erro!' : 'Aviso',
+        title: state.isError ? 'Erro!' : 'Sucesso!',
         description: state.message,
         variant: state.isError ? 'destructive' : 'default',
       });
-    }
 
-    if (state.isSuccess && state.productData) {
-        toast({
-            title: 'Sucesso!',
-            description: state.message,
-        });
-
-        // Update in localStorage
-        const storedProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
-        const updatedProducts = storedProducts.map(p => 
-            p.id === state.productData!.id ? { ...p, ...state.productData, dataAiHint: 'product' } : p
-        );
-        localStorage.setItem('products', JSON.stringify(updatedProducts));
-        
-        // Also update the initialProducts if it's one of them (for demo purposes)
-        const initialProductIndex = initialProducts.findIndex(p => p.id === state.productData!.id);
-        if (initialProductIndex > -1) {
-            console.warn("Editing initial products is for demo purposes and won't persist on page reload.");
-            Object.assign(initialProducts[initialProductIndex], state.productData);
-        }
-
-        const timer = setTimeout(() => {
+      if (state.isSuccess) {
+         const timer = setTimeout(() => {
             router.push('/estoque');
         }, 1000);
         return () => clearTimeout(timer);
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, router, toast]);
   
   const fileRef = form.register('image');
 
-  const onSubmit = (formData: FormData) => {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     const data = form.getValues();
+
     if (data.image && data.image.length > 0) {
       const file = data.image[0];
       const reader = new FileReader();
@@ -173,7 +166,7 @@ export default function EditProductPage() {
       reader.onload = () => {
         const base64Image = reader.result as string;
         formData.set('imageUrl', base64Image); // new base64 image
-        dispatch(formData);
+        formAction(formData);
       };
 
       reader.onerror = (error) => {
@@ -188,12 +181,10 @@ export default function EditProductPage() {
       reader.readAsDataURL(file);
     } else {
       formData.set('imageUrl', data.imageUrl || 'https://placehold.co/200x200'); // keep old image
-      dispatch(formData);
+      formAction(formData);
     }
   };
 
-
-  const uniqueCategories = useMemo(() => [...new Set(initialProducts.map(p => p.category))], []);
 
   if (loading) {
     return (
@@ -240,7 +231,7 @@ export default function EditProductPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form action={dispatch} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4">
                {/* Hidden ID field */}
                <FormField name="id" control={form.control} render={({ field }) => <Input type="hidden" {...field} />} />
 
@@ -411,5 +402,3 @@ export default function EditProductPage() {
     </div>
   );
 }
-
-    

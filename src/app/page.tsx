@@ -4,7 +4,7 @@
 import type { FC } from 'react';
 import { useState, useMemo, useCallback, useEffect, ChangeEvent } from 'react';
 import type { OrderItem, Product, Sale } from '@/types';
-import { products as initialProducts } from '@/data/products';
+import { getProducts } from '@/services/product-service';
 import Header from '@/components/header';
 import OrderSummary from '@/components/order-summary';
 import ProductRecommender from '@/components/product-recommender';
@@ -45,13 +45,13 @@ const HomePage: FC = () => {
 
 
   useEffect(() => {
-    // Load products from localStorage and merge with initial products
-    const storedProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
-    const allProductIds = new Set(initialProducts.map(p => p.id));
-    const uniqueStoredProducts = storedProducts.filter(p => !allProductIds.has(p.id));
-
-    setProducts([...initialProducts, ...uniqueStoredProducts]);
-    setLoadingProducts(false);
+    async function fetchProducts() {
+        setLoadingProducts(true);
+        const productsFromDb = await getProducts();
+        setProducts(productsFromDb);
+        setLoadingProducts(false);
+    }
+    fetchProducts();
   }, []);
 
   const addToOrder = useCallback((product: Product, qty: number = 1) => {
@@ -84,7 +84,7 @@ const HomePage: FC = () => {
     }
   };
 
-  const updateQuantity = (productId: number, newQuantity: number) => {
+  const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromOrder(productId);
     } else {
@@ -96,7 +96,7 @@ const HomePage: FC = () => {
     }
   };
 
-  const removeFromOrder = (productId: number) => {
+  const removeFromOrder = (productId: string) => {
     setOrderItems((prevItems) =>
       prevItems.filter((item) => item.product.id !== productId)
     );
@@ -239,7 +239,7 @@ const HomePage: FC = () => {
              {/* Left Column */}
             <div className="lg:col-span-2 flex flex-col gap-4">
                 <div className="bg-background/80 text-foreground p-2 md:p-4 rounded-lg flex-1 flex flex-col gap-4">
-                  <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} onCategoryClick={openCatalog} />
+                  <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} onCategoryClick={openCatalog} products={products} />
                 </div>
             </div>
 

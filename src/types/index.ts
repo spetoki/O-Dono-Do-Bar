@@ -1,6 +1,6 @@
 
 export interface Product {
-  id: number;
+  id: string; // Changed to string for Firestore compatibility
   barcode?: string;
   name: string;
   description: string;
