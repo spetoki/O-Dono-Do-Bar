@@ -61,10 +61,11 @@ export default function CloseoutPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
         const storedSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
-        const initialSalesIds = new Set(initialSalesData.map(s => s.id));
-        const uniqueStoredSales = storedSales.filter(s => !initialSalesIds.has(s.id));
+        
+        // Use a Set to ensure initial sales data is not duplicated if it's also in localStorage
+        const saleIds = new Set(storedSales.map(s => s.id));
+        const combinedSales = [...storedSales, ...initialSalesData.filter(s => !saleIds.has(s.id))];
 
-        const combinedSales = [...initialSalesData, ...uniqueStoredSales];
         setAllSales(combinedSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   }, []);
@@ -97,10 +98,10 @@ export default function CloseoutPage() {
     totalRevenue: totalRevenueAll 
   } = useMemo(() => calculateTotals(todaysSales), [todaysSales]);
 
+  const parseInput = (value: string) => parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+
   // Memoized differences, calculated based on the form inputs against admin's view of all sales
   const { cashDifference, cardPixDifference, fiadoDifference } = useMemo(() => {
-    const parseInput = (value: string) => parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
-
     const countedCashNum = parseInput(countedCash);
     const countedCardPixNum = parseInput(countedCardPix);
     const countedFiadoNum = parseInput(countedFiado);
@@ -129,20 +130,26 @@ export default function CloseoutPage() {
     const existingArchives: Record<string, any> = JSON.parse(localStorage.getItem('sales_archive') || '{}');
     const archiveKey = now.toISOString().split('T')[0]; // YYYY-MM-DD
     
-    // 2. Add today's sales to the archive
+    // 2. Add today's sales and the full conference report to the archive
+    const countedCashNum = parseInput(countedCash);
+    const countedCardPixNum = parseInput(countedCardPix);
+    const countedFiadoNum = parseInput(countedFiado);
+
     existingArchives[archiveKey] = {
       closeoutDate: now.toISOString(),
       closedBy: user?.name,
       sales: salesToArchive,
-      conference: {
-        countedCash,
-        countedCardPix,
-        countedFiado,
-        cashDifference,
-        cardPixDifference,
-        fiadoDifference,
+      systemTotals: calculateTotals(salesToArchive),
+      countedTotals: {
+        cash: countedCashNum,
+        cardPix: countedCardPixNum,
+        fiado: countedFiadoNum,
       },
-      ...calculateTotals(salesToArchive)
+      differences: {
+        cash: countedCashNum - totalExpectedCash,
+        cardPix: countedCardPixNum - totalExpectedCardPix,
+        fiado: countedFiadoNum - totalExpectedFiado,
+      }
     };
 
     // 3. Save the updated archive
@@ -302,7 +309,7 @@ export default function CloseoutPage() {
                         <CardHeader>
                             <CardTitle>Conferência de Caixa</CardTitle>
                             <CardDescription>
-                            Após conferir seu relatório, insira os valores totais apurados em seu turno. Apenas administradores podem finalizar.
+                            Após conferir seu relatório, insira os valores totais apurados em seu turno para finalizar o expediente.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -367,7 +374,7 @@ export default function CloseoutPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout} >Finalizar e Arquivar Caixa</Button>
+                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout}>Finalizar e Arquivar Caixa</Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
@@ -403,3 +410,6 @@ export default function CloseoutPage() {
     </div>
   );
 }
+
+
+    
