@@ -154,7 +154,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
           }
       }}>
         <div className="flex-shrink-0 flex justify-center">
-            <div className="printable-area font-mono text-xs p-2 bg-white text-black border border-dashed border-black/50 rounded-sm w-full" style={{ transform: 'scale(0.8)', transformOrigin: 'top' }}>
+            <div className="printable-area font-mono text-xs p-2 bg-white text-black border border-dashed border-black/50 rounded-sm w-full" style={{ transform: 'scale(0.5)', transformOrigin: 'top' }}>
                 <header className="text-center space-y-1">
                     <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
                     <p>CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
@@ -330,4 +330,3 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
- 
