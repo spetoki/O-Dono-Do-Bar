@@ -17,10 +17,13 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { customers } from '@/data/customers';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, Badge } from 'lucide-react';
 import React from 'react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useToast } from '@/hooks/use-toast';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
+type DiscountType = 'amount' | 'percentage';
 
 interface ReceiptDialogProps {
   isOpen: boolean;
@@ -41,63 +44,69 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   onFinalize,
   orderItems,
   subtotal,
-  total,
-  tax,
-  onAmountPaidChange,
-  amountPaid,
-  change
+  // tax is passed but not used after discount feature was added
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
+  const [amountPaid, setAmountPaid] = useState(0);
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const [cpf, setCpf] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+
+  const [discountType, setDiscountType] = useState<DiscountType>('amount');
+  const [discountValue, setDiscountValue] = useState('');
+
   const saleId = useRef('');
   const saleDate = useRef('');
   const saleTime = useRef('');
+  const { toast } = useToast();
 
+  const discountAmount = useMemo(() => {
+    const value = parseFloat(discountValue.replace(',', '.')) || 0;
+    if (discountType === 'percentage') {
+      return (subtotal * value) / 100;
+    }
+    return value;
+  }, [discountValue, discountType, subtotal]);
+
+  const total = useMemo(() => {
+    const newTotal = subtotal - discountAmount;
+    return newTotal > 0 ? newTotal : 0;
+  }, [subtotal, discountAmount]);
+
+  const tax = useMemo(() => total * 0.08, [total]);
+
+  const change = useMemo(() => {
+    return amountPaid > total ? amountPaid - total : 0;
+  }, [amountPaid, total]);
 
   useEffect(() => {
     if (isOpen) {
-        // Generate mock sale details
-        saleId.current = Math.random().toString(36).substring(2, 10).toUpperCase();
-        const now = new Date();
-        saleDate.current = now.toLocaleDateString('pt-BR');
-        saleTime.current = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      // Generate mock sale details
+      saleId.current = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const now = new Date();
+      saleDate.current = now.toLocaleDateString('pt-BR');
+      saleTime.current = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-      // If the payment method is not cash, set amountPaid to total
-      if (paymentMethod !== 'dinheiro') {
-        onAmountPaidChange(total);
-        setAmountPaidDisplay(formatPrice(total));
-      } else {
-        // If it's cash and an amount has been passed from the main page, use it.
-        if (amountPaid > 0) {
-          setAmountPaidDisplay(formatPrice(amountPaid));
-        } else {
-          onAmountPaidChange(0);
-          setAmountPaidDisplay('');
-        }
-      }
-      setCpf(''); // Reset CPF on open
+      // Reset state on open
+      setCpf('');
       setSelectedCustomer(null);
+      setDiscountValue('');
+      setAmountPaid(0);
+      setAmountPaidDisplay('');
+      setPaymentMethod('dinheiro');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, paymentMethod, total]);
+  }, [isOpen]);
 
-  useEffect(() => {
-    // Sync the dialog's local display state if the prop changes (e.g., from main page input)
-    if (paymentMethod === 'dinheiro') {
-       if (amountPaid === 0) {
-        setAmountPaidDisplay('');
-      } else if (amountPaid.toString() !== amountPaidDisplay.replace(',', '.')) {
-        // Update display only if it's different to avoid overwriting user input
-        // setAmountPaidDisplay(formatPrice(amountPaid));
-      }
+   useEffect(() => {
+    if (paymentMethod !== 'dinheiro') {
+      setAmountPaid(total);
+      setAmountPaidDisplay(formatPrice(total));
     } else {
-       onAmountPaidChange(total); // Ensure amount paid is total for other methods
-       setAmountPaidDisplay(formatPrice(total));
+        setAmountPaid(0);
+        setAmountPaidDisplay('');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[amountPaid, paymentMethod]);
+  }, [paymentMethod, total]);
 
 
   const formatCurrency = (amount: number) =>
@@ -117,26 +126,34 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const handleFinalize = () => {
     // Here you could add logic to save the sale, CPF, etc.
     console.log(`Venda finalizada com CPF: ${cpf}, Cliente: ${selectedCustomer}, ID: ${saleId.current}`);
+    toast({
+        title: "Venda Finalizada!",
+        description: `Venda ${saleId.current} concluída com sucesso.`,
+    })
     onFinalize();
   };
-
 
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setAmountPaidDisplay(value);
     
-    // Allow empty string or valid number format up to 1,000,000
     if (value === '' || /^\d{1,7}([,.]\d{0,2})?$/.test(value)) {
        const numericValue = parseFloat(value.replace(',', '.')) || 0;
        if (numericValue <= 1000000) {
-         onAmountPaidChange(numericValue);
+         setAmountPaid(numericValue);
        }
     }
   };
 
+  const handleDiscountChange = (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+       if (value === '' || /^\d{1,7}([,.]\d{0,2})?$/.test(value)) {
+           setDiscountValue(value);
+       }
+  }
+
   const totalItems = orderItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  
   if (!isOpen) return null;
 
   return (
@@ -145,29 +162,22 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             onClose();
         }
     }}>
-      <DialogContent className="max-w-sm max-h-[95vh] flex flex-col p-4" onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          const input = document.getElementById('amount-paid');
-          if (input && paymentMethod === 'dinheiro') {
-            (input as HTMLInputElement).focus();
-            (input as HTMLInputElement).select();
-          }
-      }}>
+      <DialogContent className="max-w-md max-h-[95vh] flex flex-col p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
         <div className="flex-shrink-0 flex justify-center">
-            <div className="printable-area font-mono text-xs p-2 bg-white text-black border border-dashed border-black/50 rounded-sm w-full" style={{ transform: 'scale(0.5)', transformOrigin: 'top' }}>
+            <div className="printable-area font-mono text-xs p-2 bg-white text-black border border-dashed border-black/50 rounded-sm w-full" style={{ transform: 'scale(0.5)', transformOrigin: 'top', height: '620px' }}>
                 <header className="text-center space-y-1">
                     <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
                     <p>CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
                     <p>Rua Sarjento Jose Das Quantas, 6589, Santa felicidade - Cascavel PR</p>
                     <p>Fone 45 99969-6969 e 45 99966-9966</p>
-                    <Separator className="border-dashed border-black"/>
+                    <Separator className="border-dashed border-black my-1"/>
                     <p>Documento auxiliar da nota fiscal de consumidor eletronica</p>
                     <div className="flex justify-between">
                         <span>{saleDate.current}</span>
                         <span>ID da Venda: {saleId.current}</span>
                         <span>{saleTime.current}</span>
                     </div>
-                    <Separator className="border-dashed border-black"/>
+                    <Separator className="border-dashed border-black my-1"/>
                     <p className="font-bold">CUPOM FISCAL</p>
                 </header>
 
@@ -200,7 +210,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         </div>
                         <div className="flex justify-between">
                             <span>Desconto</span>
-                            <span>- {formatCurrency(0)}</span>
+                            <span>- {formatCurrency(discountAmount)}</span>
                         </div>
                         <div className="flex justify-between font-bold text-base">
                             <span>TOTAL</span>
@@ -239,54 +249,17 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
         <ScrollArea className="flex-1 -mr-4 pr-4">
             <div className="space-y-4 pt-2">
-                {paymentMethod !== 'fiado' && (
                 <div className="space-y-2">
-                    <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
-                    <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-                </div>
-                )}
-                
-                <div>
                     <Label className="text-sm font-medium">Forma de Pagamento</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                    {(['dinheiro', 'cartao', 'pix', 'fiado'] as PaymentMethod[]).map(method => (
-                        <Button 
-                            key={method}
-                            variant={paymentMethod === method ? 'default' : 'outline'}
-                            onClick={() => setPaymentMethod(method)}
-                            className="flex-1"
-                        >
-                            {method === 'dinheiro' && <DollarSign />}
-                            {method === 'cartao' && <CreditCard />}
-                            {method === 'pix' && <Landmark />}
-                            {method === 'fiado' && <ClipboardList />}
-                            <span className="capitalize ml-2">{method}</span>
-                        </Button>
-                    ))}
-                    </div>
+                    <ToggleGroup type="single" value={paymentMethod} onValueChange={(value: PaymentMethod) => value && setPaymentMethod(value)} className="grid grid-cols-4 gap-2">
+                        <ToggleGroupItem value="dinheiro" className="flex-col h-14 gap-1"><DollarSign /> Dinheiro</ToggleGroupItem>
+                        <ToggleGroupItem value="cartao" className="flex-col h-14 gap-1"><CreditCard /> Cartão</ToggleGroupItem>
+                        <ToggleGroupItem value="pix" className="flex-col h-14 gap-1"><Landmark /> Pix</ToggleGroupItem>
+                        <ToggleGroupItem value="fiado" className="flex-col h-14 gap-1"><ClipboardList /> Fiado</ToggleGroupItem>
+                    </ToggleGroup>
                 </div>
-
-                {paymentMethod === 'dinheiro' && (
-                    <div className="space-y-2 animate-fade-in">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                            <Label htmlFor="amount-paid">Valor Pago</Label>
-                            <Input 
-                                id="amount-paid" 
-                                value={amountPaidDisplay} 
-                                onChange={handleAmountChange} 
-                                className="text-right font-mono text-lg h-12" 
-                                placeholder="0,00"
-                            />
-                            </div>
-                            <div className="space-y-2">
-                            <Label htmlFor="change">Troco</Label>
-                            <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {paymentMethod === 'fiado' && (
+                
+                {paymentMethod === 'fiado' ? (
                 <div className="space-y-2 animate-fade-in">
                     <Label htmlFor="customer-select">Selecionar Cliente</Label>
                     <div className="flex gap-2">
@@ -308,19 +281,62 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         </Button>
                     </div>
                 </div>
+                ) : (
+                <div className="space-y-2 animate-fade-in">
+                    <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
+                    <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                </div>
+                )}
+                
+                <div className="space-y-2">
+                    <Label>Desconto</Label>
+                    <div className="flex gap-2">
+                        <ToggleGroup type="single" value={discountType} onValueChange={(value: DiscountType) => value && setDiscountType(value)} >
+                           <ToggleGroupItem value="amount" aria-label="Desconto em R$"><DollarSign className="h-4 w-4"/></ToggleGroupItem>
+                           <ToggleGroupItem value="percentage" aria-label="Desconto em %"><Percent className="h-4 w-4"/></ToggleGroupItem>
+                        </ToggleGroup>
+                        <Input 
+                            placeholder={discountType === 'amount' ? 'R$ 0,00' : '0%'}
+                            value={discountValue}
+                            onChange={handleDiscountChange}
+                        />
+                    </div>
+                </div>
+
+
+                {paymentMethod === 'dinheiro' && (
+                    <div className="space-y-2 animate-fade-in">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                            <Label htmlFor="amount-paid">Valor Recebido</Label>
+                            <Input 
+                                id="amount-paid" 
+                                value={amountPaidDisplay} 
+                                onChange={handleAmountChange} 
+                                className="text-right font-mono text-lg h-12" 
+                                placeholder="0,00"
+                                autoFocus
+                            />
+                            </div>
+                            <div className="space-y-2">
+                            <Label htmlFor="change">Troco</Label>
+                            <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-lg h-12 bg-muted" />
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
         </ScrollArea>
         
 
         <DialogFooter className="grid grid-cols-3 gap-2 mt-2 pt-4 border-t flex-shrink-0">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} className="h-12">
               <XCircle className="mr-2" /> Fechar
             </Button>
-            <Button variant="outline" onClick={handlePrint}>
+            <Button variant="outline" onClick={handlePrint} className="h-12">
               <Printer className="mr-2" /> Imprimir
             </Button>
-            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
+            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white h-12" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
                 <CheckCircle className="mr-2" /> Finalizar Venda
             </Button>
         </DialogFooter>
