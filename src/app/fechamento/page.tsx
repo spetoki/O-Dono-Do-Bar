@@ -26,11 +26,14 @@ const formatDate = (date: Date) => {
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    }).format(date);
+    }).format(date)
 }
 
 export default function CloseoutPage() {
   const [countedCash, setCountedCash] = useState('');
+  const [countedCardPix, setCountedCardPix] = useState('');
+  const [countedFiado, setCountedFiado] = useState('');
+  
   const { user } = useAuth();
 
   const todaysSales = useMemo(() => {
@@ -53,6 +56,8 @@ export default function CloseoutPage() {
   const totalRevenue = useMemo(() => todaysSales.reduce((acc, sale) => acc + sale.total, 0), [todaysSales]);
 
   const expectedCash = useMemo(() => totalsByPaymentMethod['dinheiro'] || 0, [totalsByPaymentMethod]);
+  const expectedCardPix = useMemo(() => totalsByPaymentMethod['cartao_pix'] || 0, [totalsByPaymentMethod]);
+  const expectedFiado = useMemo(() => totalsByPaymentMethod['fiado'] || 0, [totalsByPaymentMethod]);
   
   const cashDifference = useMemo(() => {
       const counted = parseFloat(countedCash.replace(',', '.')) || 0;
@@ -60,9 +65,23 @@ export default function CloseoutPage() {
       return counted - expectedCash;
   }, [countedCash, expectedCash]);
 
+  const cardPixDifference = useMemo(() => {
+    const counted = parseFloat(countedCardPix.replace(',', '.')) || 0;
+    if (counted === 0 && expectedCardPix > 0 && countedCardPix.trim() === '') return 0;
+    return counted - expectedCardPix;
+  }, [countedCardPix, expectedCardPix]);
+
+  const fiadoDifference = useMemo(() => {
+    const counted = parseFloat(countedFiado.replace(',', '.')) || 0;
+    if (counted === 0 && expectedFiado > 0 && countedFiado.trim() === '') return 0;
+    return counted - expectedFiado;
+  }, [countedFiado, expectedFiado]);
+
   const handlePrint = () => {
     window.print();
   };
+  
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="space-y-4 printable-area">
@@ -107,108 +126,156 @@ export default function CloseoutPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
-                    <p className="text-xs text-muted-foreground">{todaysSales.length} vendas hoje</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Vendas em Dinheiro</CardTitle>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(totalsByPaymentMethod['dinheiro'] || 0)}</div>
-                    <p className="text-xs text-muted-foreground">Total esperado no caixa</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Cartão / Pix</CardTitle>
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(totalsByPaymentMethod['cartao_pix'] || 0)}</div>
-                    <p className="text-xs text-muted-foreground">Pagamentos eletrônicos</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Vendas Fiado</CardTitle>
-                    <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(totalsByPaymentMethod['fiado'] || 0)}</div>
-                    <p className="text-xs text-muted-foreground">Total pendente de clientes</p>
-                </CardContent>
-            </Card>
-          </div>
+          {isAdmin && (
+            <div className="grid gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+                      <p className="text-xs text-muted-foreground">{todaysSales.length} vendas hoje</p>
+                  </CardContent>
+              </Card>
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Vendas em Dinheiro</CardTitle>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="h-4 w-4 text-muted-foreground"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(expectedCash)}</div>
+                      <p className="text-xs text-muted-foreground">Total esperado no caixa</p>
+                  </CardContent>
+              </Card>
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Cartão / Pix</CardTitle>
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(expectedCardPix)}</div>
+                      <p className="text-xs text-muted-foreground">Pagamentos eletrônicos</p>
+                  </CardContent>
+              </Card>
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Vendas Fiado</CardTitle>
+                      <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(expectedFiado)}</div>
+                      <p className="text-xs text-muted-foreground">Total pendente de clientes</p>
+                  </CardContent>
+              </Card>
+            </div>
+          )}
           
           <Card>
             <CardHeader>
-                <CardTitle>Conferência do Caixa</CardTitle>
-                <CardDescription>Insira o valor total em dinheiro contado no caixa para verificar a diferença.</CardDescription>
+                <CardTitle>Conferência de Caixa</CardTitle>
+                <CardDescription>Insira os valores totais apurados para cada forma de pagamento para conferência.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <div className="grid md:grid-cols-4 gap-4 items-end">
-                    <div className="space-y-2">
-                        <Label htmlFor="expected-cash">Valor Esperado (Dinheiro)</Label>
-                        <Input id="expected-cash" value={formatCurrency(expectedCash)} readOnly className="font-mono text-lg" />
+            <CardContent className="space-y-4">
+                {/* Dinheiro */}
+                <div className="grid md:grid-cols-3 gap-4 items-end">
+                    <div className="space-y-1">
+                        <Label htmlFor="counted-cash" className="font-semibold">DINHEIRO</Label>
+                        {isAdmin && <p className="text-xs text-muted-foreground">Esperado: {formatCurrency(expectedCash)}</p>}
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="counted-cash">Valor Contado no Caixa</Label>
+                    <div className="space-y-2">
+                        <Label htmlFor="counted-cash" className="sr-only">Valor Contado (Dinheiro)</Label>
                         <Input 
                             id="counted-cash" 
                             type="text"
                             placeholder="R$ 0,00"
                             value={countedCash}
                             onChange={(e) => setCountedCash(e.target.value)}
-                            className="font-mono text-lg border-2 border-primary"
+                            className="font-mono text-lg"
                         />
                     </div>
-                     <div className="space-y-2">
-                        <Label>Diferença</Label>
-                         <div className={cn(
-                            "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
-                            cashDifference === 0 && "bg-muted",
-                            cashDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
-                            cashDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
-                         )}>
-                            {formatCurrency(cashDifference)}
-                        </div>
-                    </div>
-                     <Card className={cn(
-                        "border-2 h-full flex flex-col justify-center",
-                        cashDifference === 0 && "border-transparent",
-                        cashDifference > 0 && "border-blue-500",
-                        cashDifference < 0 && "border-destructive"
-                     )}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2">
-                            <CardTitle className="text-sm font-medium">Status</CardTitle>
-                            <Scale className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent className="p-2 pt-0">
+                    {isAdmin && (
+                        <div className="space-y-2">
+                            <Label className="text-xs">Diferença</Label>
                             <div className={cn(
-                                "text-lg font-bold",
-                                cashDifference === 0 && "text-muted-foreground",
-                                cashDifference > 0 && "text-blue-500",
-                                cashDifference < 0 && "text-destructive"
+                                "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
+                                cashDifference === 0 && "bg-muted",
+                                cashDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
+                                cashDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
                             )}>
-                                {cashDifference > 0 ? "Sobra" : cashDifference < 0 ? "Falta" : "Caixa Correto"}
+                                {formatCurrency(cashDifference)}
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    )}
+                </div>
+
+                {/* Cartão / PIX */}
+                <div className="grid md:grid-cols-3 gap-4 items-end">
+                    <div className="space-y-1">
+                        <Label htmlFor="counted-card-pix" className="font-semibold">CARTÃO / PIX</Label>
+                        {isAdmin && <p className="text-xs text-muted-foreground">Esperado: {formatCurrency(expectedCardPix)}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="counted-card-pix" className="sr-only">Valor Contado (Cartão/Pix)</Label>
+                        <Input 
+                            id="counted-card-pix" 
+                            type="text"
+                            placeholder="R$ 0,00"
+                            value={countedCardPix}
+                            onChange={(e) => setCountedCardPix(e.target.value)}
+                            className="font-mono text-lg"
+                        />
+                    </div>
+                    {isAdmin && (
+                        <div className="space-y-2">
+                            <Label className="text-xs">Diferença</Label>
+                            <div className={cn(
+                                "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
+                                cardPixDifference === 0 && "bg-muted",
+                                cardPixDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
+                                cardPixDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
+                            )}>
+                                {formatCurrency(cardPixDifference)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Fiado */}
+                <div className="grid md:grid-cols-3 gap-4 items-end">
+                    <div className="space-y-1">
+                        <Label htmlFor="counted-fiado" className="font-semibold">FIADO</Label>
+                        {isAdmin && <p className="text-xs text-muted-foreground">Esperado: {formatCurrency(expectedFiado)}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="counted-fiado" className="sr-only">Valor Contado (Fiado)</Label>
+                        <Input 
+                            id="counted-fiado" 
+                            type="text"
+                            placeholder="R$ 0,00"
+                            value={countedFiado}
+                            onChange={(e) => setCountedFiado(e.target.value)}
+                            className="font-mono text-lg"
+                        />
+                    </div>
+                    {isAdmin && (
+                        <div className="space-y-2">
+                            <Label className="text-xs">Diferença</Label>
+                            <div className={cn(
+                                "h-10 flex items-center justify-center rounded-md border text-lg font-bold",
+                                fiadoDifference === 0 && "bg-muted",
+                                fiadoDifference > 0 && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border-blue-500/50",
+                                fiadoDifference < 0 && "bg-destructive/10 text-destructive border-destructive/50",
+                            )}>
+                                {formatCurrency(fiadoDifference)}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </CardContent>
           </Card>
 
-          {user?.role === 'admin' && (
+          {isAdmin && (
             <Card className="mt-6">
                   <CardHeader>
                       <CardTitle>Vendas Realizadas Hoje</CardTitle>
@@ -248,5 +315,5 @@ export default function CloseoutPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
