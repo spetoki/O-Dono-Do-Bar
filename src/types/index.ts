@@ -23,3 +23,11 @@ export interface Sale {
   total: number;
   paymentMethod: 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 }
+
+export interface Customer {
+  id: number;
+  name: string;
+  cpf: string;
+  phone: string;
+  debt: number;
+}

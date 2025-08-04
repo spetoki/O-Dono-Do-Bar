@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { ShoppingCart, PackagePlus, Boxes, LineChart } from 'lucide-react';
+import { ShoppingCart, PackagePlus, Boxes, LineChart, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
@@ -39,6 +39,12 @@ const Header: FC = () => {
       label: 'Histórico de Vendas',
       icon: LineChart,
       active: pathname === '/vendas',
+    },
+     {
+      href: '/clientes',
+      label: 'Clientes',
+      icon: Users,
+      active: pathname === '/clientes',
     },
   ];
 

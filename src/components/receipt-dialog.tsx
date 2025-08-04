@@ -10,12 +10,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import type { OrderItem } from '@/types';
+import type { OrderItem, Customer } from '@/types';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { customers } from '@/data/customers';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus } from 'lucide-react';
 import React from 'react';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
@@ -48,6 +50,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('dinheiro');
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const [cpf, setCpf] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const saleId = useRef('');
   const saleDate = useRef('');
   const saleTime = useRef('');
@@ -75,6 +78,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         }
       }
       setCpf(''); // Reset CPF on open
+      setSelectedCustomer(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, paymentMethod, total]);
@@ -112,7 +116,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   
   const handleFinalize = () => {
     // Here you could add logic to save the sale, CPF, etc.
-    console.log(`Venda finalizada com CPF: ${cpf}, ID: ${saleId.current}`);
+    console.log(`Venda finalizada com CPF: ${cpf}, Cliente: ${selectedCustomer}, ID: ${saleId.current}`);
     onFinalize();
   };
 
@@ -207,7 +211,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                 <div className="my-2 space-y-1">
                      <div className="flex justify-between">
                         <span>Método Pagto.</span>
-                        <span className="capitalize">{paymentMethod}</span>
+                        <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customers.find(c => c.id.toString() === selectedCustomer)?.name || 'N/A'}` : paymentMethod}</span>
                     </div>
                     <div className="flex justify-between">
                         <span>Valor Recebido</span>
@@ -231,10 +235,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             </footer>
         </div>
 
-         <div className="space-y-2">
-            <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
-            <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-        </div>
+        {paymentMethod !== 'fiado' && (
+          <div className="space-y-2">
+              <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
+              <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+          </div>
+        )}
         
         <Separator />
         
@@ -278,6 +284,29 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                   </div>
               </div>
         )}
+        {paymentMethod === 'fiado' && (
+          <div className="space-y-2 animate-fade-in">
+            <Label htmlFor="customer-select">Selecionar Cliente</Label>
+            <div className="flex gap-2">
+                <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
+                    <SelectTrigger id="customer-select" className="flex-1">
+                        <SelectValue placeholder="Escolha um cliente..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {customers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id.toString()}>
+                                {customer.name} - {customer.cpf}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Button variant="outline" size="icon">
+                    <UserPlus className="h-4 w-4"/>
+                    <span className="sr-only">Adicionar Cliente</span>
+                </Button>
+            </div>
+          </div>
+        )}
         
 
         <DialogFooter className="grid grid-cols-3 gap-2 mt-4">
@@ -287,7 +316,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <Button variant="outline" onClick={handlePrint}>
               <Printer className="mr-2" /> Imprimir
             </Button>
-            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white">
+            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
                 <CheckCircle className="mr-2" /> Finalizar Venda
             </Button>
         </DialogFooter>
