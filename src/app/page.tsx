@@ -3,7 +3,7 @@
 
 import type { FC } from 'react';
 import { useState, useMemo, useCallback, useEffect, ChangeEvent } from 'react';
-import type { OrderItem, Product } from '@/types';
+import type { OrderItem, Product, Sale } from '@/types';
 import { products as initialProducts } from '@/data/products';
 import Header from '@/components/header';
 import OrderSummary from '@/components/order-summary';
@@ -13,7 +13,6 @@ import { Search, DollarSign, X, Barcode } from 'lucide-react';
 import ProductCatalogDialog from '@/components/product-catalog-dialog';
 import { useToast } from '@/hooks/use-toast';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
-import ReceiptDialog from '@/components/receipt-dialog';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/auth-context';
@@ -25,7 +24,6 @@ const HomePage: FC = () => {
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [initialCategory, setInitialCategory] = useState('Todos');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [amountPaid, setAmountPaid] = useState(0);
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const { toast } = useToast();
@@ -126,21 +124,48 @@ const HomePage: FC = () => {
     setIsCatalogOpen(true);
   };
 
-  const openFinalizeSaleDialog = () => {
-    if (orderItems.length > 0) {
-      // Pass the amount from the main page to the dialog
-      setIsReceiptOpen(true);
-    } else {
+  const handleFinalizeSale = () => {
+    if (orderItems.length === 0) {
       toast({
         variant: 'destructive',
         title: 'Carrinho Vazio',
         description: 'Adicione produtos antes de finalizar a venda.',
       });
+      return;
     }
-  };
+    
+    if (!user) {
+        toast({
+            title: "Erro!",
+            description: "Nenhum usuário logado. Não é possível finalizar a venda.",
+            variant: "destructive"
+        })
+        return;
+    }
 
-  const handleFinalizeAndClear = () => {
-    setIsReceiptOpen(false);
+    const saleId = String(Math.floor(Math.random() * 900000) + 100000);
+
+    const newSale: Sale = {
+        id: saleId,
+        date: new Date().toISOString(),
+        items: orderItems,
+        subtotal: subtotal,
+        tax: 0, // Tax is no longer calculated here
+        total: total,
+        paymentMethod: 'dinheiro', // Default or could be dynamic
+        operatorId: user.id,
+        operatorName: user.name,
+    };
+
+    const existingSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
+    const updatedSales = [...existingSales, newSale];
+    localStorage.setItem('sales', JSON.stringify(updatedSales));
+
+    toast({
+        title: "Venda Finalizada!",
+        description: `Venda #${saleId} concluída com sucesso.`,
+    })
+
     clearOrder();
   };
   
@@ -167,7 +192,7 @@ const HomePage: FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Shortcuts for POS main page
-      if (isReceiptOpen || isCatalogOpen || isScannerOpen) return;
+      if (isCatalogOpen || isScannerOpen) return;
 
       if (e.key.toLowerCase() === 'f7') {
         e.preventDefault();
@@ -179,7 +204,7 @@ const HomePage: FC = () => {
       }
       if (e.key.toLowerCase() === 'f10') {
         e.preventDefault();
-        openFinalizeSaleDialog();
+        handleFinalizeSale();
       }
        if (e.key.toLowerCase() === 'f5') {
         e.preventDefault();
@@ -191,7 +216,7 @@ const HomePage: FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderItems, total, isReceiptOpen, isCatalogOpen, isScannerOpen]);
+  }, [orderItems, total, isCatalogOpen, isScannerOpen]);
 
   if (loading || !user || loadingProducts) {
     return (
@@ -285,7 +310,7 @@ const HomePage: FC = () => {
                     <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-sm md:text-lg">
                       <X className="mr-2"/> {isMobile ? '' : 'CANCELAR'} (F5)
                       </Button>
-                    <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-sm md:text-lg">
+                    <Button onClick={handleFinalizeSale} className="flex-1 h-14 text-sm md:text-lg">
                       <DollarSign className="mr-2"/> {isMobile ? '' : 'FINALIZAR'} (F10)
                       </Button>
                   </div>
@@ -304,18 +329,6 @@ const HomePage: FC = () => {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleScan}
-      />
-       <ReceiptDialog
-        isOpen={isReceiptOpen}
-        onClose={() => setIsReceiptOpen(false)}
-        onFinalize={handleFinalizeAndClear}
-        orderItems={orderItems}
-        subtotal={subtotal}
-        tax={0}
-        total={total}
-        onAmountPaidChange={setAmountPaid}
-        amountPaid={amountPaid}
-        change={change}
       />
     </div>
   );
