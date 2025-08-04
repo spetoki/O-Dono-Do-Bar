@@ -68,7 +68,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     companyAddress: 'Rua da Cerveja, 123 - Cascavel, PR',
     companyPhone: '(45) 99999-8888',
     taxRate: '0.00',
-    receiptMessage: 'Obrigado pela preferência!',
+    receiptMessage: 'Obrigado pela preferência! Volte sempre!',
   });
 
 
@@ -441,3 +441,5 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
+
+    

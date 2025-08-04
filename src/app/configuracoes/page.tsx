@@ -28,7 +28,7 @@ export default function SettingsPage() {
     companyAddress: '',
     companyPhone: '',
     taxRate: '0.00',
-    receiptMessage: 'Obrigado pela preferência!',
+    receiptMessage: 'Obrigado pela preferência! Volte sempre!',
   });
 
   // Load settings from localStorage on component mount
@@ -184,3 +184,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
