@@ -52,47 +52,47 @@ export default function NewCustomerPage() {
       });
     }
 
-    if (state.isSuccess && state.customerData) {
-        // Lógica para salvar no localStorage
+    if (state.isSuccess) {
+      if (state.customerData) {
         const existingCustomers: Customer[] = JSON.parse(localStorage.getItem('customers') || '[]');
-        const newCustomer: Customer = {
-            ...state.customerData,
-            id: new Date().getTime(), // ID único baseado no tempo
-            debt: 0,
-        };
-        const allCustomers = [...initialCustomers, ...existingCustomers];
-        const isDuplicate = allCustomers.some(c => c.cpf === newCustomer.cpf);
+        
+        const isDuplicate = [...initialCustomers, ...existingCustomers].some(c => c.cpf === state.customerData!.cpf);
 
         if (isDuplicate) {
              toast({
-                title: 'Erro!',
-                description: 'CPF já cadastrado.',
+                title: 'Erro de Duplicidade',
+                description: 'Um cliente com este CPF já existe.',
                 variant: 'destructive',
             });
-            // Reset state to allow new submissions
+            // Reset success state to allow re-submission after correction
             state.isSuccess = false; 
             return;
         }
 
+        const newCustomer: Customer = {
+            ...state.customerData,
+            id: new Date().getTime(), // Unique ID based on timestamp
+            debt: 0,
+        };
+        
         const updatedCustomers = [...existingCustomers, newCustomer];
         localStorage.setItem('customers', JSON.stringify(updatedCustomers));
-
-
-        const timer = setTimeout(() => {
-             router.push('/clientes');
-        }, 1000);
-        return () => clearTimeout(timer);
+      }
+      
+      const timer = setTimeout(() => {
+           router.push('/clientes');
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-
   }, [state, toast, router]);
   
-  const onSubmit = form.handleSubmit(async (data) => {
+  const onSubmit = (data: CustomerFormValues) => {
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('cpf', data.cpf);
     formData.append('phone', data.phone);
     dispatch(formData);
-  });
+  };
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -103,7 +103,7 @@ export default function NewCustomerPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -144,13 +144,13 @@ export default function NewCustomerPage() {
                 )}
               />
               <div className="flex justify-end gap-2 pt-4">
-                <Link href="/clientes">
+                <Link href="/clientes" passHref>
                   <Button variant="outline" type="button">
                     <X className="mr-2 h-4 w-4" />
                     Voltar
                   </Button>
                 </Link>
-                <Button type="submit">
+                <Button type="submit" disabled={form.formState.isSubmitting}>
                   <Save className="mr-2 h-4 w-4" />
                   Salvar Cliente
                 </Button>
