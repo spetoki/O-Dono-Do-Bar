@@ -5,7 +5,7 @@ import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { createProduct, type FormState } from '@/app/cadastro/actions';
@@ -16,12 +16,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
-import { Save, X } from 'lucide-react';
-import { products } from '@/data/products';
+import { Save, X, Percent } from 'lucide-react';
+import { products as initialProducts } from '@/data/products';
+import type { Product } from '@/types';
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
-  price: z.coerce.number().positive({ message: 'O preço deve ser um número positivo.' }),
+  costPrice: z.coerce.number().positive({ message: 'O custo deve ser um número positivo.' }),
+  profitMargin: z.coerce.number().min(0, { message: 'A margem de lucro não pode ser negativa.'}),
+  price: z.coerce.number().positive({ message: 'O preço de venda deve ser positivo.' }),
   stock: z.coerce.number().int().min(0, { message: 'O estoque não pode ser negativo.' }),
   category: z.string().min(3, { message: 'A categoria deve ter pelo menos 3 caracteres.' }),
   description: z.string().optional(),
@@ -40,12 +43,32 @@ export default function NewProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
+      costPrice: 0,
+      profitMargin: 20, // Default profit margin
       price: 0,
       stock: 0,
       category: '',
       description: '',
     },
   });
+
+  const costPrice = form.watch('costPrice');
+  const profitMargin = form.watch('profitMargin');
+
+  useEffect(() => {
+    const calculatePrice = () => {
+      const cost = parseFloat(String(costPrice)) || 0;
+      const margin = parseFloat(String(profitMargin)) || 0;
+      if (cost > 0) {
+        const finalPrice = cost * (1 + margin / 100);
+        form.setValue('price', parseFloat(finalPrice.toFixed(2)));
+      } else {
+        form.setValue('price', 0);
+      }
+    };
+    calculatePrice();
+  }, [costPrice, profitMargin, form]);
+
 
   useEffect(() => {
     if (state.message) {
@@ -57,12 +80,23 @@ export default function NewProductPage() {
     }
 
     if (state.isSuccess) {
-      const timer = setTimeout(() => {
-        router.push('/estoque');
-      }, 1000);
-      return () => clearTimeout(timer);
+        // Logic to save to local storage
+        const currentProducts: Product[] = JSON.parse(localStorage.getItem('products') || '[]');
+        const newProduct: Product = {
+            ...form.getValues(),
+            id: new Date().getTime(),
+            imageUrl: 'https://placehold.co/200x200',
+            dataAiHint: 'product',
+        };
+        const updatedProducts = [...currentProducts, newProduct];
+        localStorage.setItem('products', JSON.stringify(updatedProducts));
+        
+        const timer = setTimeout(() => {
+            router.push('/estoque');
+        }, 1000);
+        return () => clearTimeout(timer);
     }
-  }, [state, toast, router]);
+  }, [state, toast, router, form]);
 
   const onSubmit = (data: ProductFormValues) => {
     const formData = new FormData();
@@ -74,7 +108,7 @@ export default function NewProductPage() {
     dispatch(formData);
   };
 
-  const uniqueCategories = [...new Set(products.map(p => p.category))];
+  const uniqueCategories = [...new Set(initialProducts.map(p => p.category))];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -99,20 +133,52 @@ export default function NewProductPage() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control}
-                    name="price"
+                    name="costPrice"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Preço (R$)</FormLabel>
+                        <FormLabel>Valor de Custo (R$)</FormLabel>
                         <FormControl>
-                        <Input type="number" step="0.01" placeholder="Ex: 3.50" {...field} />
+                          <Input type="number" step="0.01" placeholder="Ex: 2.50" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
+                 <FormField
+                    control={form.control}
+                    name="profitMargin"
+                    render={({ field }) => (
+                     <FormItem>
+                        <FormLabel>Margem de Lucro (%)</FormLabel>
+                        <FormControl>
+                           <div className="relative">
+                              <Input type="number" placeholder="Ex: 20" {...field} className="pl-8" />
+                              <Percent className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                           </div>
+                        </FormControl>
+                        <FormMessage />
+                     </FormItem>
+                    )}
+                />
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Preço de Venda (R$)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} readOnly className="bg-muted/50" />
+                      </FormControl>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+                />
+              </div>
+
+               <div className="grid grid-cols-2 gap-4">
                  <FormField
                     control={form.control}
                     name="stock"
@@ -126,7 +192,6 @@ export default function NewProductPage() {
                     </FormItem>
                     )}
                 />
-              </div>
                 <FormField
                     control={form.control}
                     name="category"
@@ -145,6 +210,8 @@ export default function NewProductPage() {
                     </FormItem>
                     )}
                 />
+              </div>
+              
                <FormField
                 control={form.control}
                 name="description"

@@ -1,8 +1,10 @@
+
 export interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
+  costPrice?: number; // Custo de compra do produto
+  price: number; // Preço de venda para o cliente
   imageUrl: string;
   category: string;
   stock: number;
