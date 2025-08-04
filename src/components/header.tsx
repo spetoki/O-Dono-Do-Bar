@@ -2,7 +2,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X, Cog, LogOut, UserCircle } from 'lucide-react';
+import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X, Cog, LogOut, UserCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -39,36 +39,52 @@ const Header: FC = () => {
       label: 'Cadastrar Itens',
       icon: PackagePlus,
       active: pathname === '/cadastro' || pathname.startsWith('/cadastro/'),
+      adminOnly: false,
     },
     {
       href: '/estoque',
       label: 'Estoque',
       icon: Boxes,
        active: pathname === '/estoque' || pathname.startsWith('/estoque/'),
+       adminOnly: false,
     },
     {
       href: '/vendas',
       label: 'Histórico de Vendas',
       icon: LineChart,
       active: pathname === '/vendas',
+      adminOnly: false,
     },
      {
       href: '/clientes',
       label: 'Clientes',
       icon: Users,
       active: pathname === '/clientes' || pathname.startsWith('/clientes/'),
+      adminOnly: false,
+    },
+    {
+      href: '/funcionarios',
+      label: 'Funcionários',
+      icon: ShieldCheck,
+      active: pathname === '/funcionarios' || pathname.startsWith('/funcionarios/'),
+      adminOnly: true,
     },
      {
       href: '/configuracoes',
       label: 'Configurações',
       icon: Cog,
       active: pathname === '/configuracoes',
+      adminOnly: false,
     },
   ];
   
   const NavLinks = ({isMobile = false}: {isMobile?: boolean}) => (
     <div className={cn("flex items-center gap-2", isMobile && "flex-col items-start w-full")}>
-         {managementLinks.map(({ href, label, icon: Icon, active }) => {
+         {managementLinks.map(({ href, label, icon: Icon, active, adminOnly }) => {
+            if (adminOnly && user?.role !== 'admin') {
+                return null;
+            }
+
             const buttonContent = (
               <>
                 <Icon className={cn(isMobile ? "mr-4" : "mr-2")} />

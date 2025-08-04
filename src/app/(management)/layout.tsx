@@ -2,10 +2,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/components/header';
 import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const adminRoutes = ['/funcionarios', '/funcionarios/novo'];
 
 export default function ManagementLayout({
   children,
@@ -14,16 +16,22 @@ export default function ManagementLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
+      return;
     }
-    // Optional: Add role-based access control
-    // if (!loading && user?.role !== 'admin') {
-    //   router.push('/');
-    // }
-  }, [user, loading, router]);
+
+    // Role-based access control
+    if (!loading && user) {
+       if (adminRoutes.some(route => pathname.startsWith(route)) && user.role !== 'admin') {
+         console.log("Redirecting non-admin from admin route");
+         router.push('/');
+       }
+    }
+  }, [user, loading, router, pathname]);
 
   if (loading || !user) {
     return (
@@ -43,6 +51,22 @@ export default function ManagementLayout({
       </div>
     );
   }
+  
+  // Specific check again for the case where user loads but is not admin for admin routes
+  if (adminRoutes.some(route => pathname.startsWith(route)) && user.role !== 'admin') {
+      return (
+         <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
+            <Header />
+            <main className="flex-1 overflow-y-auto p-2 md:p-6 bg-background text-foreground">
+               <div className="mx-auto w-full max-w-6xl text-center">
+                  <h1 className="text-2xl font-bold">Acesso Negado</h1>
+                  <p className="text-muted-foreground">Você não tem permissão para acessar esta página.</p>
+               </div>
+            </main>
+         </div>
+      )
+  }
+
 
   return (
     <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
