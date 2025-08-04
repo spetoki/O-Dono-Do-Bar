@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('pt-BR', {
@@ -52,7 +53,7 @@ export default function CloseoutPage() {
   const [countedCardPix, setCountedCardPix] = useState('');
   const [countedFiado, setCountedFiado] = useState('');
   const [allSales, setAllSales] = useState<Sale[]>(initialSalesData);
-
+  const { toast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
@@ -112,6 +113,31 @@ export default function CloseoutPage() {
   const handlePrint = () => {
     window.print();
   };
+  
+  const handleFinalizeCloseout = () => {
+    // In a real app, you would save this data to your backend
+    console.log({
+      timestamp: new Date().toISOString(),
+      operatorId: user?.id,
+      countedCash,
+      countedCardPix,
+      countedFiado,
+      cashDifference,
+      cardPixDifference,
+      fiadoDifference,
+    });
+
+    toast({
+      title: 'Fechamento Registrado!',
+      description: 'A conferência de caixa foi registrada com sucesso.',
+    });
+
+    // Clear inputs after finalizing
+    setCountedCash('');
+    setCountedCardPix('');
+    setCountedFiado('');
+  };
+
 
   const SalesTable = ({ sales, showOperator = false }: { sales: Sale[], showOperator?: boolean }) => (
      <div className="w-full overflow-x-auto border rounded-lg">
@@ -304,7 +330,7 @@ export default function CloseoutPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full md:w-auto ml-auto">Finalizar e Registrar Fechamento</Button>
+                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout}>Finalizar e Registrar Fechamento</Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
@@ -340,3 +366,5 @@ export default function CloseoutPage() {
     </div>
   )
 }
+
+    
