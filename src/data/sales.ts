@@ -1,6 +1,7 @@
 
 import type { Sale } from '@/types';
 import { products } from './products';
+import { users } from './users';
 import { subDays, subWeeks, subMonths, subYears } from 'date-fns';
 
 const getRandomItems = (): { product: any, quantity: number }[] => {
@@ -25,6 +26,7 @@ const createSale = (date: Date): Sale => {
     const tax = subtotal * 0.08;
     const total = subtotal + tax;
     const paymentMethods = ['dinheiro', 'cartao', 'pix', 'fiado'] as const;
+    const operator = users[Math.floor(Math.random() * users.length)];
 
     return {
         id: `sale_${Math.random().toString(36).substr(2, 9)}`,
@@ -34,6 +36,8 @@ const createSale = (date: Date): Sale => {
         total,
         tax,
         paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+        operatorId: operator.id,
+        operatorName: operator.name,
     };
 };
 

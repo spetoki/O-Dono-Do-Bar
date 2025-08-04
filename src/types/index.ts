@@ -25,6 +25,8 @@ export interface Sale {
   tax: number;
   total: number;
   paymentMethod: 'dinheiro' | 'cartao' | 'pix' | 'fiado';
+  operatorId: number;
+  operatorName: string;
 }
 
 export interface Customer {
