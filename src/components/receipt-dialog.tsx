@@ -18,7 +18,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { customers as initialCustomers } from '@/data/customers';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw } from 'lucide-react';
 import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
@@ -58,6 +58,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const [isFinalized, setIsFinalized] = useState(false);
+
 
   const [discountType, setDiscountType] = useState<DiscountType>('amount');
   const [discountValue, setDiscountValue] = useState('');
@@ -127,6 +129,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       setLocalAmountPaid(0);
       setLocalAmountPaidDisplay('');
       setPaymentMethod('dinheiro');
+      setIsFinalized(false);
     }
   }, [isOpen]);
 
@@ -208,8 +211,12 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         title: "Venda Finalizada!",
         description: `Venda ${saleId.current} concluída com sucesso.`,
     })
-    onFinalize();
+    setIsFinalized(true);
   };
+
+  const handleNewSale = () => {
+    onFinalize();
+  }
 
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -249,17 +256,9 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         }
     }}>
       <DialogContent className="max-w-4xl h-[95vh] flex flex-col p-2 md:p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle>Finalizar Venda</DialogTitle>
-          <DialogDescription>
-            Confirme os detalhes da venda, aplique descontos e selecione a forma de pagamento.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-hidden">
-            {/* Left side: Receipt Preview */}
-            <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
-                <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
+        {isFinalized ? (
+             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+                 <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
                     <header className="text-center space-y-1 flex-shrink-0">
                         <p className="font-bold">{appSettings.companyName}</p>
                         <p className="text-[10px]">CNPJ: {appSettings.companyCnpj}</p>
@@ -269,7 +268,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         <p className="text-[10px]">Documento auxiliar da nota fiscal de consumidor eletronica</p>
                         <div className="flex justify-between text-[10px]">
                             <span>{saleDate.current}</span>
-                            <span>ID: {saleId.current}</span>
+                            <span>ID da Venda: {saleId.current}</span>
                             <span>{saleTime.current}</span>
                         </div>
                         <Separator className="border-dashed border-black my-1"/>
@@ -279,7 +278,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                     <main className="flex-1 overflow-y-auto my-2 py-1">
                         <div className="grid grid-cols-12 font-bold">
                             <div className="col-span-6">ITEM</div>
-                            <div className="col-span-3 text-center">QTDxVL.UN</div>
+                            <div className="col-span-3 text-center">QTD x VL.UN</div>
                             <div className="col-span-3 text-right">TOTAL</div>
                         </div>
                         <Separator className="border-dashed border-black my-1" />
@@ -306,8 +305,8 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                                 <span>{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Desconto</span>
-                                <span>- {formatCurrency(discountAmount)}</span>
+                                <span className="text-red-500">Desconto</span>
+                                <span className="text-red-500">- {formatCurrency(discountAmount)}</span>
                             </div>
                             <div className="flex justify-between font-bold text-base">
                                 <span>TOTAL</span>
@@ -332,113 +331,215 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                         </div>
                         <Separator className="border-dashed border-black my-1"/>
                         <div className="text-center space-y-1 mt-2 text-[10px]">
+                            <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
                             <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
                             <p className="font-bold">{appSettings.receiptMessage}</p>
                         </div>
                     </footer>
                 </div>
-            </div>
 
-            {/* Right side: Payment options */}
-            <div className="flex flex-col gap-4">
-                 <div className="space-y-2">
-                    <Label className="text-sm font-medium">Forma de Pagamento</Label>
-                    <ToggleGroup type="single" value={paymentMethod} onValueChange={(value: PaymentMethod) => value && setPaymentMethod(value)} className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <ToggleGroupItem value="dinheiro" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><DollarSign className="h-5 w-5"/> Dinheiro</ToggleGroupItem>
-                        <ToggleGroupItem value="cartao" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><CreditCard className="h-5 w-5"/> Cartão</ToggleGroupItem>
-                        <ToggleGroupItem value="pix" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><Landmark className="h-5 w-5"/> Pix</ToggleGroupItem>
-                        <ToggleGroupItem value="fiado" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><ClipboardList className="h-5 w-5"/> Fiado</ToggleGroupItem>
-                    </ToggleGroup>
+                <div className="absolute bottom-4 right-4 flex gap-2">
+                    <Button onClick={handlePrint} variant="outline" className="h-12 text-base">
+                        <Printer className="mr-2" /> Imprimir Recibo
+                    </Button>
+                    <Button onClick={handleNewSale} className="h-12 text-base bg-red-600 hover:bg-red-700">
+                        <RotateCw className="mr-2" /> Nova Venda
+                    </Button>
                 </div>
-                
-                {paymentMethod === 'fiado' ? (
-                <div className="space-y-2 animate-in fade-in-50">
-                    <Label htmlFor="customer-select">Selecionar Cliente</Label>
-                    <div className="flex gap-2">
-                        <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
-                            <SelectTrigger id="customer-select" className="flex-1">
-                                <SelectValue placeholder="Escolha um cliente cadastrado..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {customers.map((customer) => (
-                                    <SelectItem key={customer.id} value={customer.id.toString()}>
-                                        {customer.name} - {customer.cpf}
-                                    </SelectItem>
+             </div>
+        ) : (
+        <>
+            <DialogHeader>
+                <DialogTitle>Finalizar Venda</DialogTitle>
+                <DialogDescription>
+                    Confirme os detalhes da venda, aplique descontos e selecione a forma de pagamento.
+                </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-hidden">
+                {/* Left side: Receipt Preview */}
+                <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
+                    <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
+                        <header className="text-center space-y-1 flex-shrink-0">
+                            <p className="font-bold">{appSettings.companyName}</p>
+                            <p className="text-[10px]">CNPJ: {appSettings.companyCnpj}</p>
+                            <p className="text-[10px]">{appSettings.companyAddress}</p>
+                            <p className="text-[10px]">Fone: {appSettings.companyPhone}</p>
+                            <Separator className="border-dashed border-black my-1"/>
+                            <p className="text-[10px]">Documento auxiliar da nota fiscal de consumidor eletronica</p>
+                            <div className="flex justify-between text-[10px]">
+                                <span>{saleDate.current}</span>
+                                <span>ID da Venda: {saleId.current}</span>
+                                <span>{saleTime.current}</span>
+                            </div>
+                            <Separator className="border-dashed border-black my-1"/>
+                            <p className="font-bold">CUPOM FISCAL</p>
+                        </header>
+
+                        <main className="flex-1 overflow-y-auto my-2 py-1">
+                            <div className="grid grid-cols-12 font-bold">
+                                <div className="col-span-6">ITEM</div>
+                                <div className="col-span-3 text-center">QTD x VL.UN</div>
+                                <div className="col-span-3 text-right">TOTAL</div>
+                            </div>
+                            <Separator className="border-dashed border-black my-1" />
+                            
+                                {orderItems.map((item) => (
+                                    <div key={item.product.id} className="grid grid-cols-12 gap-1 my-1">
+                                        <div className="col-span-6 truncate">{item.product.name}</div>
+                                        <div className="col-span-3 text-center text-[10px]">{item.quantity}x{formatPrice(item.product.price)}</div>
+                                        <div className="col-span-3 text-right">{formatPrice(item.product.price * item.quantity)}</div>
+                                    </div>
                                 ))}
-                            </SelectContent>
-                        </Select>
-                        <Link href="/clientes/novo" target="_blank">
-                            <Button variant="outline" size="icon">
-                                <UserPlus className="h-4 w-4"/>
-                                <span className="sr-only">Adicionar Novo Cliente</span>
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-                ) : (
-                <div className="space-y-2 animate-in fade-in-50">
-                    <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
-                    <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-                </div>
-                )}
-                
-                <div className="space-y-2">
-                    <Label>Desconto</Label>
-                    <div className="flex gap-2">
-                        <ToggleGroup type="single" variant="outline" value={discountType} onValueChange={(value: DiscountType) => value && setDiscountType(value)} >
-                           <ToggleGroupItem value="amount" aria-label="Desconto em R$"><DollarSign className="h-4 w-4"/></ToggleGroupItem>
-                           <ToggleGroupItem value="percentage" aria-label="Desconto em %"><Percent className="h-4 w-4"/></ToggleGroupItem>
-                        </ToggleGroup>
-                        <Input 
-                            placeholder={discountType === 'amount' ? 'R$ 0,00' : '0%'}
-                            value={discountValue}
-                            onChange={handleDiscountChange}
-                            className="text-base"
-                        />
+                            
+                        </main>
+
+                        <footer className="flex-shrink-0">
+                            <Separator className="border-dashed border-black"/>
+                            <div className="my-2 space-y-1">
+                                <div className="flex justify-between">
+                                    <span>Qtd. de Itens</span>
+                                    <span>{totalItems}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span>{formatCurrency(subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-red-500">Desconto</span>
+                                    <span className="text-red-500">- {formatCurrency(discountAmount)}</span>
+                                </div>
+                                <div className="flex justify-between font-bold text-base">
+                                    <span>TOTAL</span>
+                                    <span>{formatCurrency(total)}</span>
+                                </div>
+                            </div>
+                            <Separator className="border-dashed border-black"/>
+                            
+                            <div className="my-2 space-y-1">
+                                <div className="flex justify-between">
+                                    <span>Método Pagto.</span>
+                                    <span className="capitalize">{paymentMethod === 'fiado' ? `Fiado - ${customerNameForReceipt}` : paymentMethod}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Valor Recebido</span>
+                                    <span>{formatCurrency(localAmountPaid)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Troco</span>
+                                    <span>{formatCurrency(change)}</span>
+                                </div>
+                            </div>
+                            <Separator className="border-dashed border-black my-1"/>
+                            <div className="text-center space-y-1 mt-2 text-[10px]">
+                                <p>Emitido conforme o Ajuste SINIEF 07/05.</p>
+                                <p>Tributos totais aproximados conforme Lei Federal 12.741/12: {formatCurrency(tax)}</p>
+                                <p className="font-bold">{appSettings.receiptMessage}</p>
+                            </div>
+                        </footer>
                     </div>
                 </div>
 
-                {paymentMethod === 'dinheiro' && (
+                {/* Right side: Payment options */}
+                <div className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">Forma de Pagamento</Label>
+                        <ToggleGroup type="single" value={paymentMethod} onValueChange={(value: PaymentMethod) => value && setPaymentMethod(value)} className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <ToggleGroupItem value="dinheiro" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><DollarSign className="h-5 w-5"/> Dinheiro</ToggleGroupItem>
+                            <ToggleGroupItem value="cartao" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><CreditCard className="h-5 w-5"/> Cartão</ToggleGroupItem>
+                            <ToggleGroupItem value="pix" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><Landmark className="h-5 w-5"/> Pix</ToggleGroupItem>
+                            <ToggleGroupItem value="fiado" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><ClipboardList className="h-5 w-5"/> Fiado</ToggleGroupItem>
+                        </ToggleGroup>
+                    </div>
+                    
+                    {paymentMethod === 'fiado' ? (
                     <div className="space-y-2 animate-in fade-in-50">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                            <Label htmlFor="amount-paid">Valor Recebido</Label>
-                            <Input 
-                                id="amount-paid" 
-                                value={localAmountPaidDisplay} 
-                                onChange={handleAmountChange} 
-                                className="text-right font-mono text-xl sm:text-2xl h-14" 
-                                placeholder="0,00"
-                                autoFocus
-                            />
-                            </div>
-                            <div className="space-y-2">
-                            <Label htmlFor="change">Troco</Label>
-                            <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-xl sm:text-2xl h-14 bg-muted" />
-                            </div>
+                        <Label htmlFor="customer-select">Selecionar Cliente</Label>
+                        <div className="flex gap-2">
+                            <Select onValueChange={setSelectedCustomer} value={selectedCustomer ?? undefined}>
+                                <SelectTrigger id="customer-select" className="flex-1">
+                                    <SelectValue placeholder="Escolha um cliente cadastrado..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {customers.map((customer) => (
+                                        <SelectItem key={customer.id} value={customer.id.toString()}>
+                                            {customer.name} - {customer.cpf}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Link href="/clientes/novo" target="_blank">
+                                <Button variant="outline" size="icon">
+                                    <UserPlus className="h-4 w-4"/>
+                                    <span className="sr-only">Adicionar Novo Cliente</span>
+                                </Button>
+                            </Link>
                         </div>
                     </div>
-                )}
-            </div>
+                    ) : (
+                    <div className="space-y-2 animate-in fade-in-50">
+                        <Label htmlFor="cpf">CPF na Nota (Opcional)</Label>
+                        <Input id="cpf" placeholder="000.000.000-00" value={cpf} onChange={(e) => setCpf(e.target.value)} />
+                    </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                        <Label>Desconto</Label>
+                        <div className="flex gap-2">
+                            <ToggleGroup type="single" variant="outline" value={discountType} onValueChange={(value: DiscountType) => value && setDiscountType(value)} >
+                            <ToggleGroupItem value="amount" aria-label="Desconto em R$"><DollarSign className="h-4 w-4"/></ToggleGroupItem>
+                            <ToggleGroupItem value="percentage" aria-label="Desconto em %"><Percent className="h-4 w-4"/></ToggleGroupItem>
+                            </ToggleGroup>
+                            <Input 
+                                placeholder={discountType === 'amount' ? 'R$ 0,00' : '0%'}
+                                value={discountValue}
+                                onChange={handleDiscountChange}
+                                className="text-base"
+                            />
+                        </div>
+                    </div>
 
-        </div>
-        
-        <DialogFooter className="grid grid-cols-3 gap-2 pt-4 border-t flex-shrink-0">
-            <Button variant="outline" onClick={onClose} className="h-12 md:h-14 text-sm md:text-lg">
-              <XCircle className="mr-2" /> {isMobile ? "Fechar" : "Fechar"}
-            </Button>
-            <Button variant="outline" onClick={handlePrint} className="h-12 md:h-14 text-sm md:text-lg">
-              <Printer className="mr-2" /> {isMobile ? "Imprimir" : "Imprimir"}
-            </Button>
-            <Button onClick={handleFinalize} className="h-12 md:h-14 text-sm md:text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
-                <CheckCircle className="mr-2" /> {isMobile ? "Finalizar" : "Finalizar Venda"}
-            </Button>
-        </DialogFooter>
+                    {paymentMethod === 'dinheiro' && (
+                        <div className="space-y-2 animate-in fade-in-50">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                <Label htmlFor="amount-paid">Valor Recebido</Label>
+                                <Input 
+                                    id="amount-paid" 
+                                    value={localAmountPaidDisplay} 
+                                    onChange={handleAmountChange} 
+                                    className="text-right font-mono text-xl sm:text-2xl h-14" 
+                                    placeholder="0,00"
+                                    autoFocus
+                                />
+                                </div>
+                                <div className="space-y-2">
+                                <Label htmlFor="change">Troco</Label>
+                                <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-xl sm:text-2xl h-14 bg-muted" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+            </div>
+            
+            <DialogFooter className="grid grid-cols-3 gap-2 pt-4 border-t flex-shrink-0">
+                <Button variant="outline" onClick={onClose} className="h-12 md:h-14 text-sm md:text-lg">
+                <XCircle className="mr-2" /> {isMobile ? "Fechar" : "Fechar"}
+                </Button>
+                <Button variant="outline" onClick={handlePrint} className="h-12 md:h-14 text-sm md:text-lg">
+                <Printer className="mr-2" /> {isMobile ? "Imprimir" : "Imprimir"}
+                </Button>
+                <Button onClick={handleFinalize} className="h-12 md:h-14 text-sm md:text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
+                    <CheckCircle className="mr-2" /> {isMobile ? "Finalizar" : "Finalizar Venda"}
+                </Button>
+            </DialogFooter>
+        </>
+      )}
       </DialogContent>
     </Dialog>
   );
 };
 
 export default ReceiptDialog;
-
-    
