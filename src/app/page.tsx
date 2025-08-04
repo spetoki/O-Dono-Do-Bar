@@ -241,7 +241,7 @@ const Home: FC = () => {
                     <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-sm md:text-lg">
                       <X className="mr-2"/> {isMobile ? '' : 'CANCELAR'} (F5)
                       </Button>
-                    <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-sm md:text-lg bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-sm md:text-lg">
                       <DollarSign className="mr-2"/> {isMobile ? '' : 'FINALIZAR'} (F10)
                       </Button>
                   </div>

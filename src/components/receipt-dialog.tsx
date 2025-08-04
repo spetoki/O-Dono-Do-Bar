@@ -386,7 +386,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <Button variant="outline" onClick={handlePrint} className="h-12 md:h-14 text-sm md:text-lg">
               <Printer className="mr-2" /> {isMobile ? "Imprimir" : "Imprimir"}
             </Button>
-            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white h-12 md:h-14 text-sm md:text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
+            <Button onClick={handleFinalize} className="h-12 md:h-14 text-sm md:text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
                 <CheckCircle className="mr-2" /> {isMobile ? "Finalizar" : "Finalizar Venda"}
             </Button>
         </DialogFooter>
