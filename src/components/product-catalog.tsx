@@ -37,12 +37,12 @@ const ProductCatalog: FC<ProductCatalogProps> = ({ products, onAddToOrder }) => 
             <TableHead>Nome</TableHead>
             <TableHead>Categoria</TableHead>
             <TableHead className="text-right">Preço</TableHead>
-            <TableHead className="w-[120px]"></TableHead>
+            <TableHead className="w-[120px] hidden md:table-cell"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.map((product) => (
-            <TableRow key={product.id}>
+            <TableRow key={product.id} onClick={() => onAddToOrder(product)} className="cursor-pointer">
               <TableCell>
                  <Image
                     src={product.imageUrl}
@@ -57,8 +57,8 @@ const ProductCatalog: FC<ProductCatalogProps> = ({ products, onAddToOrder }) => 
               <TableCell className="font-medium">{product.name}</TableCell>
               <TableCell>{product.category}</TableCell>
               <TableCell className="text-right font-mono">{formatCurrency(product.price)}</TableCell>
-              <TableCell>
-                 <Button size="sm" onClick={() => onAddToOrder(product)}>
+              <TableCell className="hidden md:table-cell">
+                 <Button size="sm" >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Adicionar
                   </Button>
