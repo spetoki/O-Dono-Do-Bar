@@ -52,22 +52,22 @@ export default function CloseoutPage() {
   const [countedCash, setCountedCash] = useState('');
   const [countedCardPix, setCountedCardPix] = useState('');
   const [countedFiado, setCountedFiado] = useState('');
-  const [allSales, setAllSales] = useState<Sale[]>(() => {
-    if (typeof window === 'undefined') {
-        return initialSalesData;
-    }
-    const storedSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
-    const initialSalesIds = new Set(initialSalesData.map(s => s.id));
-    const uniqueStoredSales = storedSales.filter(s => !initialSalesIds.has(s.id));
-
-    const combinedSales = [...initialSalesData, ...uniqueStoredSales];
-    return combinedSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  });
+  const [allSales, setAllSales] = useState<Sale[]>([]);
 
   const { toast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const storedSales: Sale[] = JSON.parse(localStorage.getItem('sales') || '[]');
+        const initialSalesIds = new Set(initialSalesData.map(s => s.id));
+        const uniqueStoredSales = storedSales.filter(s => !initialSalesIds.has(s.id));
+
+        const combinedSales = [...initialSalesData, ...uniqueStoredSales];
+        setAllSales(combinedSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    }
+  }, []);
 
   // Memoized sales data for today
   const todaysSales = useMemo(() => {
@@ -117,21 +117,55 @@ export default function CloseoutPage() {
   };
   
   const handleFinalizeCloseout = () => {
-    // In a real app, you would save this data to your backend
-    console.log({
-      timestamp: new Date().toISOString(),
-      operatorId: user?.id,
-      countedCash,
-      countedCardPix,
-      countedFiado,
-      cashDifference,
-      cardPixDifference,
-      fiadoDifference,
-    });
+     if (!isAdmin) {
+      toast({
+        title: 'Acesso Negado',
+        description: 'Apenas administradores podem finalizar o fechamento do dia.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // In a real app, you would save this to a backend database.
+    // For this demo, we'll archive sales in localStorage.
+    const now = new Date();
+    const todaysDateString = now.toDateString();
+    
+    const salesToArchive = allSales.filter(sale => new Date(sale.date).toDateString() === todaysDateString);
+    const salesToKeep = allSales.filter(sale => new Date(sale.date).toDateString() !== todaysDateString);
+    
+    // 1. Get existing archives or create a new one
+    const existingArchives: Record<string, any> = JSON.parse(localStorage.getItem('sales_archive') || '{}');
+    const archiveKey = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    // 2. Add today's sales to the archive
+    existingArchives[archiveKey] = {
+      closeoutDate: now.toISOString(),
+      closedBy: user?.name,
+      sales: salesToArchive,
+      conference: {
+        countedCash,
+        countedCardPix,
+        countedFiado,
+        cashDifference,
+        cardPixDifference,
+        fiadoDifference,
+      },
+      ...calculateTotals(salesToArchive)
+    };
+
+    // 3. Save the updated archive
+    localStorage.setItem('sales_archive', JSON.stringify(existingArchives));
+
+    // 4. Update the active sales list to remove today's sales
+    localStorage.setItem('sales', JSON.stringify(salesToKeep));
+
+    // 5. Update the state to reflect the change on the screen
+    setAllSales(salesToKeep);
 
     toast({
-      title: 'Fechamento Registrado!',
-      description: 'A conferência de caixa foi registrada com sucesso.',
+      title: 'Caixa Fechado e Arquivado!',
+      description: `As vendas de hoje foram salvas e o caixa foi zerado para o próximo dia.`,
     });
 
     // Clear inputs after finalizing
@@ -154,22 +188,32 @@ export default function CloseoutPage() {
             </TableRow>
             </TableHeader>
             <TableBody>
-                {sales.map((sale) => (
-                    <TableRow key={sale.id}>
-                        <TableCell className="font-mono text-xs">{formatDate(new Date(sale.date))}</TableCell>
-                        {showOperator && <TableCell className="text-xs">{sale.operatorName}</TableCell>}
-                        <TableCell className="truncate max-w-[200px] text-xs">{sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}</TableCell>
-                        <TableCell className="capitalize">{sale.paymentMethod}</TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(sale.total)}</TableCell>
-                    </TableRow>
-                ))}
+                {sales.length === 0 ? (
+                  <TableRow>
+                     <TableCell colSpan={showOperator ? 5 : 4} className="text-center h-24 text-muted-foreground">
+                       Nenhuma venda registrada neste período.
+                     </TableCell>
+                  </TableRow>
+                ) : (
+                  sales.map((sale) => (
+                      <TableRow key={sale.id}>
+                          <TableCell className="font-mono text-xs">{formatDate(new Date(sale.date))}</TableCell>
+                          {showOperator && <TableCell className="text-xs">{sale.operatorName}</TableCell>}
+                          <TableCell className="truncate max-w-[200px] text-xs">{sale.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}</TableCell>
+                          <TableCell className="capitalize">{sale.paymentMethod}</TableCell>
+                          <TableCell className="text-right font-medium">{formatCurrency(sale.total)}</TableCell>
+                      </TableRow>
+                  ))
+                )}
             </TableBody>
-            <TableFooter>
-                <TableRow>
-                    <TableCell colSpan={showOperator ? 4 : 3} className="text-right font-bold text-base">Total</TableCell>
-                    <TableCell className="text-right font-bold font-mono text-base">{formatCurrency(calculateTotals(sales).totalRevenue)}</TableCell>
-                </TableRow>
-            </TableFooter>
+            {sales.length > 0 && (
+                <TableFooter>
+                    <TableRow>
+                        <TableCell colSpan={showOperator ? 4 : 3} className="text-right font-bold text-base">Total</TableCell>
+                        <TableCell className="text-right font-bold font-mono text-base">{formatCurrency(calculateTotals(sales).totalRevenue)}</TableCell>
+                    </TableRow>
+                </TableFooter>
+            )}
         </Table>
     </div>
   )
@@ -267,7 +311,7 @@ export default function CloseoutPage() {
                         <CardHeader>
                             <CardTitle>Conferência de Caixa</CardTitle>
                             <CardDescription>
-                            Após conferir seu relatório, insira os valores totais apurados em seu turno.
+                            Após conferir seu relatório, insira os valores totais apurados em seu turno. Apenas administradores podem finalizar.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -332,7 +376,7 @@ export default function CloseoutPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout}>Finalizar e Registrar Fechamento</Button>
+                            <Button className="w-full md:w-auto ml-auto" onClick={handleFinalizeCloseout} disabled={!isAdmin}>Finalizar e Arquivar Caixa</Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
