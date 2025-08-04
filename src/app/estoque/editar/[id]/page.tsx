@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,7 +49,7 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true);
 
   const initialState: FormState = { message: '', isError: false, isSuccess: false };
-  const [state, dispatch] = useFormState(updateProduct, initialState);
+  const [state, dispatch] = useActionState(updateProduct, initialState);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),

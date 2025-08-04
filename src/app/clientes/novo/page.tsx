@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,7 +32,7 @@ export default function NewCustomerPage() {
   const router = useRouter();
 
   const initialState: FormState = { message: '', isError: false, isSuccess: false };
-  const [state, dispatch] = useFormState(createCustomer, initialState);
+  const [state, dispatch] = useActionState(createCustomer, initialState);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),

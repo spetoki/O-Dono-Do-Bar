@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -41,7 +41,7 @@ export default function NewProductPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const initialState: FormState = { message: '', isError: false, isSuccess: false };
-  const [state, dispatch] = useFormState(createProduct, initialState);
+  const [state, dispatch] = useActionState(createProduct, initialState);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
