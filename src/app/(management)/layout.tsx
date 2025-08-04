@@ -7,7 +7,8 @@ import Header from '@/components/header';
 import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const adminRoutes = ['/funcionarios', '/funcionarios/novo'];
+// Only routes starting with these paths require admin role
+const adminRoutes = ['/funcionarios', '/funcionarios/novo', '/funcionarios/editar'];
 
 export default function ManagementLayout({
   children,
@@ -18,20 +19,22 @@ export default function ManagementLayout({
   const router = useRouter();
   const pathname = usePathname();
 
+  const isAccessingAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+
+    if (!user) {
       router.push('/login');
       return;
     }
 
-    // Role-based access control
-    if (!loading && user) {
-       if (adminRoutes.some(route => pathname.startsWith(route)) && user.role !== 'admin') {
-         console.log("Redirecting non-admin from admin route");
-         router.push('/');
-       }
+    // If it's an admin route and the user is not an admin, redirect them.
+    if (isAccessingAdminRoute && user.role !== 'admin') {
+       console.log("Redirecting non-admin from admin route:", pathname);
+       router.push('/');
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, isAccessingAdminRoute]);
 
   if (loading || !user) {
     return (
@@ -52,8 +55,8 @@ export default function ManagementLayout({
     );
   }
   
-  // Specific check again for the case where user loads but is not admin for admin routes
-  if (adminRoutes.some(route => pathname.startsWith(route)) && user.role !== 'admin') {
+  // If the user data has loaded, but they are not an admin and trying to access an admin route
+  if (isAccessingAdminRoute && user.role !== 'admin') {
       return (
          <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
             <Header />
@@ -67,15 +70,14 @@ export default function ManagementLayout({
       )
   }
 
-
   return (
     <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
-    <Header />
-    <main className="flex-1 overflow-y-auto p-2 md:p-6 bg-background text-foreground">
-        <div className="mx-auto w-full max-w-6xl">
-            {children}
-        </div>
-    </main>
+      <Header />
+      <main className="flex-1 overflow-y-auto p-2 md:p-6 bg-background text-foreground">
+          <div className="mx-auto w-full max-w-6xl">
+              {children}
+          </div>
+      </main>
     </div>
   );
 }
