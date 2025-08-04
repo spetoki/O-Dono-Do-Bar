@@ -13,3 +13,13 @@ export interface OrderItem {
   product: Product;
   quantity: number;
 }
+
+export interface Sale {
+  id: string;
+  date: string; // ISO 8601 format
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  paymentMethod: 'dinheiro' | 'cartao' | 'pix' | 'fiado';
+}
