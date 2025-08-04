@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import ReceiptDialog from '@/components/receipt-dialog';
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 const Home: FC = () => {
@@ -27,6 +28,7 @@ const Home: FC = () => {
   const [amountPaidDisplay, setAmountPaidDisplay] = useState('');
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>(allProducts);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Load products from localStorage and merge with initial products
@@ -182,34 +184,34 @@ const Home: FC = () => {
     <div className="flex h-screen w-full flex-col bg-secondary text-secondary-foreground">
       <Header />
       <div className="flex flex-1 overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <main className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-4">
           <div className='flex justify-between items-center bg-primary text-primary-foreground p-2 rounded-md'>
-            <h2 className="font-headline text-xl font-bold">CAIXA ABERTO</h2>
+            <h2 className="font-headline text-lg md:text-xl font-bold">CAIXA ABERTO</h2>
           </div>
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
              {/* Left Column */}
-            <div className="md:col-span-2 flex flex-col gap-4">
-                <div className="bg-background/80 text-foreground p-4 rounded-lg flex-1 flex flex-col gap-4">
+            <div className="lg:col-span-2 flex flex-col gap-4">
+                <div className="bg-background/80 text-foreground p-2 md:p-4 rounded-lg flex-1 flex flex-col gap-4">
                   <ProductRecommender onAddToOrder={(product) => addToOrder(product, 1)} onCategoryClick={openCatalog} />
                 </div>
             </div>
 
             {/* Right Column */}
-            <div className="md:col-span-1 flex flex-col gap-4">
-              <div className="bg-primary text-primary-foreground p-2 rounded-md flex justify-between items-center gap-2">
-                <h3 className="font-bold">LISTA DE PRODUTOS</h3>
+            <div className="lg:col-span-1 flex flex-col gap-4">
+              <div className="bg-primary text-primary-foreground p-2 rounded-md flex-wrap flex justify-between items-center gap-2">
+                <h3 className="font-bold text-sm md:text-base">LISTA DE PRODUTOS</h3>
                 <div className="flex gap-2">
                   <Button size="sm" variant="secondary" onClick={() => setIsScannerOpen(true)}>
-                    <Barcode className="mr-2"/>
-                    Escanear (F8)
+                    <Barcode className="mr-1 md:mr-2"/>
+                    {isMobile ? '' : 'Escanear'} (F8)
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => openCatalog()}>
-                    <Search className="mr-2"/>
-                    Pesquisar (F7)
+                    <Search className="mr-1 md:mr-2"/>
+                    {isMobile ? '' : 'Pesquisar'} (F7)
                   </Button>
                 </div>
               </div>
-              <div className="flex-1 bg-background/80 rounded-lg p-2">
+              <div className="flex-1 bg-background/80 rounded-lg p-1 md:p-2 min-h-[250px]">
                  <OrderSummary
                     items={orderItems}
                     onUpdateQuantity={updateQuantity}
@@ -218,29 +220,29 @@ const Home: FC = () => {
               </div>
               <div className="grid grid-cols-3 gap-2">
                   <div className="bg-background text-foreground p-2 rounded-lg text-center flex flex-col justify-between">
-                    <h4 className="font-bold text-xs uppercase">Valor Recebido</h4>
+                    <h4 className="font-bold text-[10px] md:text-xs uppercase">Valor Recebido</h4>
                     <Input 
                       value={amountPaidDisplay} 
                       onChange={handleAmountChange} 
-                      className="text-right font-mono text-xl h-10 border-2 border-primary" 
+                      className="text-right font-mono text-base md:text-xl h-10 border-2 border-primary" 
                       placeholder="R$ 0,00"
                     />
                   </div>
                   <div className="bg-primary text-primary-foreground p-2 rounded-lg text-center">
-                    <h4 className="font-bold text-xs uppercase">Total</h4>
-                    <p className="font-mono text-2xl font-extrabold flex items-center justify-center h-full">{formatCurrency(total)}</p>
+                    <h4 className="font-bold text-[10px] md:text-xs uppercase">Total</h4>
+                    <p className="font-mono text-lg md:text-2xl font-extrabold flex items-center justify-center h-full">{formatCurrency(total)}</p>
                   </div>
                    <div className="bg-accent text-accent-foreground p-2 rounded-lg text-center">
-                    <h4 className="font-bold text-xs uppercase">Troco</h4>
-                    <p className="font-mono text-2xl font-extrabold flex items-center justify-center h-full">{formatCurrency(change)}</p>
+                    <h4 className="font-bold text-[10px] md:text-xs uppercase">Troco</h4>
+                    <p className="font-mono text-lg md:text-2xl font-extrabold flex items-center justify-center h-full">{formatCurrency(change)}</p>
                   </div>
                 </div>
                  <div className="flex gap-2">
-                    <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-lg">
-                      <X className="mr-2"/> CANCELAR (F5)
+                    <Button variant="destructive" onClick={clearOrder} className="flex-1 h-14 text-sm md:text-lg">
+                      <X className="mr-2"/> {isMobile ? '' : 'CANCELAR'} (F5)
                       </Button>
-                    <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700 text-white">
-                      <DollarSign className="mr-2"/> FINALIZAR (F10)
+                    <Button onClick={openFinalizeSaleDialog} className="flex-1 h-14 text-sm md:text-lg bg-green-600 hover:bg-green-700 text-white">
+                      <DollarSign className="mr-2"/> {isMobile ? '' : 'FINALIZAR'} (F10)
                       </Button>
                   </div>
             </div>

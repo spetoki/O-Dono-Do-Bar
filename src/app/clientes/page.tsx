@@ -38,20 +38,20 @@ export default function CustomersPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
             <CardTitle>Gerenciamento de Clientes</CardTitle>
             <CardDescription>Cadastre, edite e consulte os clientes.</CardDescription>
         </div>
-        <div className='flex gap-2'>
-            <Link href="/clientes/novo">
-             <Button>
+        <div className='flex gap-2 w-full md:w-auto'>
+            <Link href="/clientes/novo" className="flex-1 md:flex-none">
+             <Button className="w-full">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Adicionar Cliente
             </Button>
             </Link>
-            <Link href="/">
-            <Button variant="outline">
+            <Link href="/" className="flex-1 md:flex-none">
+            <Button variant="outline" className="w-full">
                 <X className="mr-2 h-4 w-4" />
                 Voltar
             </Button>
@@ -59,7 +59,7 @@ export default function CustomersPage() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[70vh]">
+        <div className="w-full overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -82,7 +82,7 @@ export default function CustomersPage() {
               ))}
             </TableBody>
           </Table>
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );

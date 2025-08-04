@@ -83,13 +83,13 @@ export default function SalesPage() {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <CardTitle>Histórico de Vendas</CardTitle>
             <CardDescription>Analise o desempenho de suas vendas.</CardDescription>
           </div>
           <Link href="/">
-            <Button variant="outline">
+            <Button variant="outline" className="w-full md:w-auto">
               <X className="mr-2 h-4 w-4" />
               Voltar
             </Button>
@@ -97,7 +97,7 @@ export default function SalesPage() {
         </CardHeader>
         <CardContent>
           <Tabs value={timeRange} onValueChange={setTimeRange}>
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="day">Hoje</TabsTrigger>
               <TabsTrigger value="week">Esta Semana</TabsTrigger>
               <TabsTrigger value="month">Este Mês</TabsTrigger>
@@ -107,7 +107,7 @@ export default function SalesPage() {
         </CardContent>
       </Card>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
           <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Vendas</CardTitle>
@@ -155,30 +155,32 @@ export default function SalesPage() {
           </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-7">
         <Card className="lg:col-span-4">
             <CardHeader>
                 <CardTitle>Vendas Recentes</CardTitle>
             </CardHeader>
             <CardContent className="h-[300px] overflow-y-auto">
-                 <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Itens</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredSales.slice(0,10).map((sale) => (
-                            <TableRow key={sale.id}>
-                                <TableCell className="font-mono text-xs">{formatDate(new Date(sale.date))}</TableCell>
-                                <TableCell>{sale.items.map(i => i.product.name).join(', ')}</TableCell>
-                                <TableCell className="text-right font-medium">{formatCurrency(sale.total)}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                 <div className="w-full overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Itens</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredSales.slice(0,10).map((sale) => (
+                                <TableRow key={sale.id}>
+                                    <TableCell className="font-mono text-xs">{formatDate(new Date(sale.date))}</TableCell>
+                                    <TableCell className="truncate max-w-xs">{sale.items.map(i => i.product.name).join(', ')}</TableCell>
+                                    <TableCell className="text-right font-medium">{formatCurrency(sale.total)}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                 </div>
             </CardContent>
         </Card>
          <Card className="lg:col-span-3">
@@ -189,7 +191,7 @@ export default function SalesPage() {
             <CardContent className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
-                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} interval={0} angle={-30} textAnchor="end" height={60} />
                         <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value as number)} />
                         <Tooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
                         <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />

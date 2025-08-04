@@ -2,36 +2,38 @@
 'use client';
 
 import type { FC } from 'react';
-import { ShoppingCart, PackagePlus, Boxes, LineChart, Users } from 'lucide-react';
+import { ShoppingCart, PackagePlus, Boxes, LineChart, Users, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from '@/components/ui/sheet';
+import { useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 const Header: FC = () => {
-  const { toast } = useToast();
   const pathname = usePathname();
-
-  const handleComingSoon = (feature: string) => {
-    toast({
-      title: 'Em Breve!',
-      description: `A funcionalidade de ${feature} está em desenvolvimento.`,
-    });
-  };
+  const isMobile = useIsMobile();
+  const [isSheetOpen, setSheetOpen] = useState(false);
 
   const managementLinks = [
      {
       href: '/cadastro',
       label: 'Cadastrar Itens',
       icon: PackagePlus,
-      active: pathname === '/cadastro',
+      active: pathname === '/cadastro' || pathname.startsWith('/cadastro/'),
     },
     {
       href: '/estoque',
       label: 'Estoque',
       icon: Boxes,
-      active: pathname === '/estoque',
+       active: pathname === '/estoque' || pathname.startsWith('/estoque/'),
     },
     {
       href: '/vendas',
@@ -43,41 +45,30 @@ const Header: FC = () => {
       href: '/clientes',
       label: 'Clientes',
       icon: Users,
-      active: pathname === '/clientes',
+      active: pathname === '/clientes' || pathname.startsWith('/clientes/'),
     },
   ];
-
-  return (
-    <header className="flex h-16 shrink-0 items-center justify-between bg-primary px-4 md:px-6 text-primary-foreground">
-      <Link href="/" className="flex items-center gap-3">
-        <ShoppingCart className="h-8 w-8" />
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">
-            YZIDRO - PDV
-          </h1>
-          <p className="text-xs">SISTEMAS ERP</p>
-        </div>
-      </Link>
-       <div className="flex items-center gap-2">
-         {managementLinks.map(({ href, label, icon: Icon, active, onClick }) => {
+  
+  const NavLinks = ({isMobile = false}: {isMobile?: boolean}) => (
+    <div className={cn("flex items-center gap-2", isMobile && "flex-col items-start w-full")}>
+         {managementLinks.map(({ href, label, icon: Icon, active }) => {
             const buttonContent = (
               <>
-                <Icon className="mr-2" />
+                <Icon className={cn(isMobile ? "mr-4" : "mr-2")} />
                 {label}
               </>
             );
             
             const buttonProps = {
                 variant: active ? 'default' : 'secondary',
-                className: cn(active && 'bg-primary-foreground/90 text-primary hover:bg-primary-foreground'),
+                className: cn(
+                  active && 'bg-primary-foreground/90 text-primary hover:bg-primary-foreground', 
+                  isMobile && "w-full justify-start text-lg p-6"
+                  ),
             };
 
-            return onClick ? (
-                 <Button {...buttonProps} onClick={onClick} key={href}>
-                    {buttonContent}
-                </Button>
-            ) : (
-                <Link href={href} key={href}>
+            return (
+                <Link href={href} key={href} onClick={() => setSheetOpen(false)}>
                     <Button {...buttonProps}>
                         {buttonContent}
                     </Button>
@@ -85,6 +76,39 @@ const Header: FC = () => {
             )
          })}
       </div>
+  );
+
+
+  return (
+    <header className="flex h-16 shrink-0 items-center justify-between bg-primary px-4 md:px-6 text-primary-foreground">
+      <Link href="/" className="flex items-center gap-3">
+        <ShoppingCart className="h-8 w-8" />
+        <div>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight">
+            YZIDRO - PDV
+          </h1>
+          <p className="text-xs">SISTEMAS ERP</p>
+        </div>
+      </Link>
+      
+      {isMobile ? (
+        <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Abrir menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full max-w-xs bg-secondary">
+             <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-secondary-foreground">Menu</h2>
+             </div>
+             <NavLinks isMobile />
+          </SheetContent>
+        </Sheet>
+      ) : (
+       <NavLinks />
+      )}
     </header>
   );
 };

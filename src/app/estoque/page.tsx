@@ -15,7 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { X, PackagePlus, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -58,20 +57,20 @@ export default function InventoryPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
             <CardTitle>Gerenciamento de Estoque</CardTitle>
             <CardDescription>Consulte, adicione e edite produtos.</CardDescription>
         </div>
-        <div className='flex gap-2'>
-            <Link href="/cadastro">
-                <Button>
+        <div className='flex gap-2 w-full md:w-auto'>
+            <Link href="/cadastro" className="flex-1 md:flex-none">
+                <Button className="w-full">
                     <PackagePlus className="mr-2 h-4 w-4" />
                     Adicionar Produto
                 </Button>
             </Link>
-            <Link href="/">
-                <Button variant="outline">
+            <Link href="/" className="flex-1 md:flex-none">
+                <Button variant="outline" className="w-full">
                     <X className="mr-2 h-4 w-4" />
                     Voltar
                 </Button>
@@ -79,7 +78,7 @@ export default function InventoryPage() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[70vh]">
+        <div className="w-full overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -119,7 +118,7 @@ export default function InventoryPage() {
               ))}
             </TableBody>
           </Table>
-        </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );

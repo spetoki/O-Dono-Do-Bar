@@ -23,6 +23,7 @@ import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 type DiscountType = 'amount' | 'percentage';
@@ -54,6 +55,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
   const [cpf, setCpf] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const isMobile = useIsMobile();
 
   const [discountType, setDiscountType] = useState<DiscountType>('amount');
   const [discountValue, setDiscountValue] = useState('');
@@ -201,7 +203,7 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             onClose();
         }
     }}>
-      <DialogContent className="max-w-4xl h-[95vh] flex flex-col p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-4xl h-[95vh] flex flex-col p-2 md:p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Finalizar Venda</DialogTitle>
           <DialogDescription>
@@ -209,10 +211,10 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 overflow-hidden">
             {/* Left side: Receipt Preview */}
-            <div className="bg-muted/30 p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
-                <div className="printable-area font-mono text-xs p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col scale-[0.8] origin-top">
+            <div className="bg-muted/30 p-2 md:p-4 rounded-lg flex flex-col items-center justify-center overflow-hidden">
+                <div className="printable-area font-mono text-xs p-2 md:p-4 bg-white text-black border border-dashed border-black/50 rounded-sm w-full max-w-sm h-full flex flex-col md:scale-[0.8] origin-top">
                     <header className="text-center space-y-1 flex-shrink-0">
                         <p className="font-bold">DISTRIBUIDORA DE BEBIDAS SANTA FELICIDADE</p>
                         <p className="text-[10px]">CNPJ: 45.878.700/0001-44 DISTRIBUIDORA SANTA LTDA</p>
@@ -297,11 +299,11 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
             <div className="flex flex-col gap-4">
                  <div className="space-y-2">
                     <Label className="text-sm font-medium">Forma de Pagamento</Label>
-                    <ToggleGroup type="single" value={paymentMethod} onValueChange={(value: PaymentMethod) => value && setPaymentMethod(value)} className="grid grid-cols-4 gap-2">
-                        <ToggleGroupItem value="dinheiro" className="flex-col h-16 gap-1 text-sm"><DollarSign className="h-5 w-5"/> Dinheiro</ToggleGroupItem>
-                        <ToggleGroupItem value="cartao" className="flex-col h-16 gap-1 text-sm"><CreditCard className="h-5 w-5"/> Cartão</ToggleGroupItem>
-                        <ToggleGroupItem value="pix" className="flex-col h-16 gap-1 text-sm"><Landmark className="h-5 w-5"/> Pix</ToggleGroupItem>
-                        <ToggleGroupItem value="fiado" className="flex-col h-16 gap-1 text-sm"><ClipboardList className="h-5 w-5"/> Fiado</ToggleGroupItem>
+                    <ToggleGroup type="single" value={paymentMethod} onValueChange={(value: PaymentMethod) => value && setPaymentMethod(value)} className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <ToggleGroupItem value="dinheiro" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><DollarSign className="h-5 w-5"/> Dinheiro</ToggleGroupItem>
+                        <ToggleGroupItem value="cartao" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><CreditCard className="h-5 w-5"/> Cartão</ToggleGroupItem>
+                        <ToggleGroupItem value="pix" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><Landmark className="h-5 w-5"/> Pix</ToggleGroupItem>
+                        <ToggleGroupItem value="fiado" className="flex-col h-14 sm:h-16 gap-1 text-xs sm:text-sm"><ClipboardList className="h-5 w-5"/> Fiado</ToggleGroupItem>
                     </ToggleGroup>
                 </div>
                 
@@ -361,14 +363,14 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
                                 id="amount-paid" 
                                 value={localAmountPaidDisplay} 
                                 onChange={handleAmountChange} 
-                                className="text-right font-mono text-2xl h-14" 
+                                className="text-right font-mono text-xl sm:text-2xl h-14" 
                                 placeholder="0,00"
                                 autoFocus
                             />
                             </div>
                             <div className="space-y-2">
                             <Label htmlFor="change">Troco</Label>
-                            <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-2xl h-14 bg-muted" />
+                            <Input id="change" value={formatCurrency(change)} readOnly className="text-right font-mono text-xl sm:text-2xl h-14 bg-muted" />
                             </div>
                         </div>
                     </div>
@@ -378,14 +380,14 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
         </div>
         
         <DialogFooter className="grid grid-cols-3 gap-2 pt-4 border-t flex-shrink-0">
-            <Button variant="outline" onClick={onClose} className="h-14 text-lg">
-              <XCircle className="mr-2" /> Fechar
+            <Button variant="outline" onClick={onClose} className="h-12 md:h-14 text-sm md:text-lg">
+              <XCircle className="mr-2" /> {isMobile ? "Fechar" : "Fechar"}
             </Button>
-            <Button variant="outline" onClick={handlePrint} className="h-14 text-lg">
-              <Printer className="mr-2" /> Imprimir
+            <Button variant="outline" onClick={handlePrint} className="h-12 md:h-14 text-sm md:text-lg">
+              <Printer className="mr-2" /> {isMobile ? "Imprimir" : "Imprimir"}
             </Button>
-            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white h-14 text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
-                <CheckCircle className="mr-2" /> Finalizar Venda
+            <Button onClick={handleFinalize} className="bg-green-600 hover:bg-green-700 text-white h-12 md:h-14 text-sm md:text-lg" disabled={paymentMethod === 'fiado' && !selectedCustomer}>
+                <CheckCircle className="mr-2" /> {isMobile ? "Finalizar" : "Finalizar Venda"}
             </Button>
         </DialogFooter>
       </DialogContent>
@@ -394,5 +396,3 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 };
 
 export default ReceiptDialog;
-
-    
