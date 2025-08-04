@@ -16,13 +16,14 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { customers as initialCustomers } from '@/data/customers';
-import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw } from 'lucide-react';
+import { Printer, XCircle, DollarSign, CreditCard, Landmark, ClipboardList, CheckCircle, UserPlus, Percent, RotateCw, ShoppingCart } from 'lucide-react';
 import React from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/auth-context';
+import QRCode from 'qrcode.react';
 
 type PaymentMethod = 'dinheiro' | 'cartao' | 'pix' | 'fiado';
 type DiscountType = 'amount' | 'percentage';
@@ -290,7 +291,6 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
     lines.push(center(`Emitido conforme o Ajuste SINIEF 07/05.`));
     lines.push('');
     lines.push(center(appSettings.receiptMessage));
-    lines.push(center(`Volte sempre! 🍻`));
     lines.push(line());
 
     return lines.join('\n');
@@ -307,11 +307,23 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
       <DialogContent className="max-w-4xl h-[95vh] flex flex-col p-2 md:p-4" onOpenAutoFocus={(e) => e.preventDefault()}>
         {isFinalized ? (
              <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-                <DialogHeader>
+                <DialogHeader className="items-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary mb-4 text-primary-foreground">
+                        <ShoppingCart className="h-8 w-8" />
+                    </div>
                     <DialogTitle className="text-3xl font-bold">Venda Concluída!</DialogTitle>
                 </DialogHeader>
                  <div className="printable-area bg-white text-black p-4 rounded-lg shadow-lg w-full max-w-sm font-mono text-xs">
                     <pre className="whitespace-pre-wrap break-words">{receiptLines}</pre>
+                     <div className='flex justify-center pt-2'>
+                       <QRCode
+                            id='qr-code-receipt'
+                            value='https://github.com/firebase/genkit'
+                            size={80}
+                            level={'H'}
+                            includeMargin={false}
+                        />
+                    </div>
                 </div>
 
                 <div className="flex gap-2 w-full max-w-sm">
@@ -444,4 +456,3 @@ const ReceiptDialog: FC<ReceiptDialogProps> = ({
 
 export default ReceiptDialog;
 
-    
