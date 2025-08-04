@@ -36,7 +36,7 @@ const ProductRecommender: FC<ProductRecommenderProps> = ({ onAddToOrder, onCateg
         <p className="text-sm text-muted-foreground">
           Navegue pelas categorias de produtos.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-3 gap-4 mt-4">
           {categories.map((category) => (
             <Button
               key={category.name}
